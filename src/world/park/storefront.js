@@ -153,7 +153,7 @@ export function shopfront(F, M, S, L, { door = 'right', pil = 0.36 } = {}) {
     F.geo(trim, molding(P.sill(0.85), x0, x1, 0.72, -0.12));
     const n = Math.max(1, Math.round((x1 - x0) / 1.15)), pw = (x1 - x0) / n;
     for (let i = 0; i < n; i++) {
-      const p0 = x0 + i * pw, k = L.lot.smash && !L.smashed ? (L.smashed = 2) : pickDmg(r, 1.5);
+      const p0 = x0 + i * pw, k0 = L.lot.smash && !L.smashed ? (L.smashed = 2) : pickDmg(r, 1.5), k = L.lot.smash && k0 === 3 ? 1 : k0;   // hero lots: glass broken, never boarded (the bear must show)
       pane(S.glass[k === 3 ? 1 : k][Math.floor(r() * 2)], p0, p0 + pw, 0.8, 2.52, -0.16);
       pane(S.glass[r() < 0.2 ? 1 : 0][Math.floor(r() * 2)], p0, p0 + pw, 2.6, head - 0.08, -0.16);       // transom lights
       if (k === 3) for (let j = 0; j < 4; j++) { const g = new THREE.BoxGeometry(pw + 0.25, 0.22, 0.035); g.rotateZ((r() - 0.5) * 0.3); g.translate(p0 + pw / 2, 1.0 + j * 0.42, -0.06 + j * 0.01); F.geo(M.boards, g); }

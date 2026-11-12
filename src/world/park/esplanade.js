@@ -70,11 +70,13 @@ export function buildEsplanade(ctx) {
   // (the old banner poles at x ±5.5 gave way to M3's lamp standards: the bunting now hangs off the lamp tops)
   // bunting: swags across Main Street between the lamps, along both kerbs, and from the arch to the lodges
   const fest = ctx.festive, W = (x, y, z) => new THREE.Vector3(x, y, z), LX = 4.95, LY = 4.78;
-  fest.bunting(W(-LX, LY, 24), W(LX, LY, 24), { sag: 1.0, seed: 21 });
-  fest.bunting(W(LX, LY, 30.5), W(-LX, LY, 30.5), { sag: 1.0, seed: 27 });
+  // (M4: no swag right in front of the spawn camera; the z 24 swag hangs from the upper storeys so its pennants clear
+  //  the sight line from the spawn eye to the castle clock — at the lamp tops it sat across the dial)
+  const FX = 7.45;
+  fest.bunting(W(-FX, 7.9, 24.6), W(FX, 8.1, 23.4), { sag: 1.1, seed: 21 });
   fest.bunting(W(-LX, LY, 13.6), W(LX, LY, 13.6), { sag: 0.9, seed: 31, broken: true });
   fest.bunting(W(LX, LY, -5), W(-LX, LY, -5), { sag: 0.9, seed: 33 });
-  for (const sx of [-1, 1]) { fest.bunting(W(sx * LX, LY, 24), W(sx * LX, LY, 30.5), { sag: 0.6, seed: 3 + sx });
+  for (const sx of [-1, 1]) {
     fest.bunting(W(0, 13.6, 35.7), W(sx * 13, 10.6, 33.4), { sag: 1.4, seed: 11 + sx });
     fest.bunting(W(sx * 13, 10.6, 33.4), W(sx * 24, 10.6, 33.4), { sag: 1.2, seed: 13 + sx, broken: sx > 0 }); }
 }

@@ -35,7 +35,7 @@ export function buildAwnings(ctx) {
   const mats = [[0, 0], [0, 1], [1, 0], [1, 1]].map(([k, t]) => cloth(awningTex(k, t)));
   for (const lot of LOTS) {
     const a = AWN[lot.id]; if (!a) continue;
-    const [kind, torn, droop] = a, F = lotFrame(B, lot), w = lot.z1 - lot.z0, aw = w - 1.0, p = 1.45, y0 = 3.28, y1 = 2.62;
+    const [kind, torn, droop] = a, F = lotFrame(B, lot), w = lot.z1 - lot.z0, aw = w - 0.3, p = 1.45, y0 = 3.28, y1 = 2.62;
     F.geo(mats[kind * 2 + torn], awningGeo(aw, p, y0, y1, 0.3, 0.07, droop), 'keep');
     // iron: wall rail, two folding arms, the front roller bar
     const iron = [new THREE.CylinderGeometry(0.025, 0.025, aw, 6).rotateZ(Math.PI / 2).translate(0, y0 + 0.02, 0.04)];

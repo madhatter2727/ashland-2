@@ -82,7 +82,7 @@ export function buildDecay(ctx, { ivy = [], tufts = [], litterZones = [], spills
     else if (k < 0.9) { const lying = r() < 0.6; p.y = lying ? 0.045 : 0.065; p.y += y0; boxes.push({ m: new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromEuler(new THREE.Euler(lying ? Math.PI / 2 : 0, r() * 6.3, 0, 'YXZ')), new THREE.Vector3(1, 1, 1)) }); }
     else maps.push({ m: new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + (r() - 0.5) * 0.25, 0, r() * 6.3)), new THREE.Vector3(0.42, 0.3, 1)) });
   }
-  inst(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ roughness: 0.95, side: THREE.DoubleSide }), papers);
+  inst(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ color: '#a8a090', roughness: 0.95, side: THREE.DoubleSide }), papers);   // M4: grimed, so scraps don't glare white in the sun
   inst(new THREE.BoxGeometry(0.09, 0.13, 0.07), new THREE.MeshStandardMaterial({ map: boxTex(), roughness: 0.9 }), boxes);
   inst(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ map: mapLeafTex(), roughness: 0.95, side: THREE.DoubleSide }), maps);
   // ---- spilled popcorn

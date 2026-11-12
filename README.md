@@ -1,14 +1,31 @@
-# ASHLAND
+# ASHLAND 2
 
 A horde shooter in the browser, set in Ashland, a fairy-tale theme park on a late autumn afternoon, with the
 horde coming in through the gates. Built on three.js and WebGL shaders.
 
+**Play Ashland 2:** https://ashland-2.vercel.app
+
+**New in Ashland 2 — Main Street.** The hub bandstand is gone: you now spawn at the south gate looking up a
+straight cobbled shop street at Ashland Castle, with a small open square and the fountain in front of it as
+the main fighting space.
+- 14 Victorian storefronts in three modular styles (3-storey mansard emporiums with iron balconies and
+  cresting, clapboard front gables with oriel bays, Italianate false fronts) in faded teal, plum, coral,
+  mustard and cream, with gold-lettered signboards: Ashland Confectionery, Souvenirs, Ashland Emporium,
+  Candy & Treats, Kettle Corn Co., Clockwork Toys, Starlight Cinema and more. Full collision; nav rebuilt.
+- Street props: frayed red/cream and plum/cream striped awnings, black iron double-globe lamp standards with
+  purple Ashland Castle banners, bunting across the street, benches, overgrown planters, bins, popcorn carts.
+- Decay (about 70% magic / 30% decay): smashed and cracked shop windows, dusty teddy bears slumped behind the
+  broken glass of the Emporium and Souvenirs, ivy, sky-reflecting puddles in the setts, leaves, paper and
+  spilled popcorn.
+- Gameplay is unchanged: guns, horde, waves, wall-buys, the Clock Terrace and Grotto buy areas.
+  Build notes: [docs/MAINSTREET_PLAN.md](docs/MAINSTREET_PLAN.md).
+
 ASHLAND is a **setting reskin of [Hordefall](https://github.com/madhatter2727/hordefall)**. The guns, movement,
 perks, shop, wall-buys, horde AI, enemies and throwables are Hordefall's, unchanged, except that mouse look is about 2x faster. The world is new.
 
-**Play:** https://ashland-park.vercel.app (also https://ashland-lac.vercel.app)
+(The original Ashland: https://ashland-park.vercel.app)
 
-![The opening view: Ashland Castle and its fountain from the bandstand](docs/castle.jpg)
+![The opening view: Main Street to Ashland Castle](shots/final-spawn.png)
 
 ## The park
 - **The main gate and Main Street** (south): two painted pylons with RIDES and AMUSEMENTS bands carry an

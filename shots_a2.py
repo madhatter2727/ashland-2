@@ -24,7 +24,8 @@ with sync_playwright() as p:
              ('shopc', (-1.6, 0, 19.2), (2.19, 0.18)),        # W2 Kettle Corn (style C) from across the walk
              ('shopb', (-2.0, 0, 11.0), (2.1, 0.22)),         # W3 Clockwork Toys (style B)
              ('alley', (-16, 0, 18.2), (-1.75, 0.1)),          # alley B from the gardens side, looking east
-             ('souvenirs', (3.4, 0, 26.2), (-1.3, 0.12))]     # E1 Ashland Souvenirs' smashed pane (M3 teddy)
+             ('souvenirs', (3.4, 0, 26.2), (-1.3, 0.12)),        # E1 Ashland Souvenirs' smashed pane (M3 teddy)
+             ('sidewalk', (-6.4, 0, 23.0), (-0.95, 0.06))]   # M4: eye height on the west walk, angled across to the east shops
     only = sys.argv[4].split(',') if len(sys.argv) > 4 else None
     views = [v for v in views if not only or v[0] in only]
     for name, pos, look in views:

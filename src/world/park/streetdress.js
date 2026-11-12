@@ -7,7 +7,8 @@ import { weather } from './materials.js';
 import { LOTS, STREET, lotFrame } from './mainstreet.js';
 import { buildAwnings, buildStreetLamps } from './streetprops.js';
 import { bench, planter, bin, popcornCart2, flushFlowers } from './streetfurniture.js';
-import { leafTex } from './proptex.js';
+import { leafTex, puddleTex } from './proptex.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const WK = STREET.walkY;
 // carts (x, z, yaw, tipped): on the carriageway by the kerbs, the middle lane (|x| < 2.6) left clear
@@ -59,18 +60,21 @@ export function buildStreetDress(ctx) {
   // teddy bears behind the broken glass
   for (const id of ['W7', 'E1']) {
     const lot = LOTS.find((l) => l.id === id), F = lotFrame(B, lot), u = heroPane(lot);
-    F.box(M.boards, u - 0.24, u + 0.24, 0.32, 0.7, -0.62, -0.28);
-    teddy(scene, M, F.point(u + 0.04, 0.7, -0.48), F.rotY + 0.25 * (id === 'W7' ? 1 : -1), id.charCodeAt(0) * 7);
+    F.box(M.boards, u - 0.24, u + 0.24, 0.32, 0.86, -0.62, -0.28);   // crate top above the stall riser so the bear fills the pane
+    teddy(scene, M, F.point(u + 0.04, 0.86, -0.46), F.rotY + 0.25 * (id === 'W7' ? 1 : -1), id.charCodeAt(0) * 7);
   }
 
-  // puddles: dark mirror pools in the dips of the setts (reflect the sky through the env map)
-  const pm = new THREE.MeshStandardMaterial({ color: '#24272a', roughness: 0.03, metalness: 0.45, envMapIntensity: 0.85, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 });
+  // puddles (M4): thin, irregular, soft-edged water films in the low spots of the setts. A near-white metallic
+  // mirror (reflects the sky env map) faded in by a feathered alpha card, so the wet setts show through at the rim.
+  const pm = new THREE.MeshStandardMaterial({ color: '#c4c6c2', roughness: 0.03, metalness: 0.95, envMapIntensity: 1.25, alphaMap: puddleTex(), transparent: true, opacity: 0.92, depthWrite: false,
+    polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 });
   const pg = [];
-  for (const [x, z, rx, rz] of [[-1.3, 27.6, 1.7, 0.9], [2.4, 23.4, 0.9, 0.6], [0.6, 15.2, 1.1, 0.7], [-2.2, 4.6, 1.3, 0.8], [1.6, -3.4, 0.8, 0.55], [-1.0, -11.5, 1.4, 0.9], [3.4, 31.2, 0.6, 0.9], [-6.5, -17.5, 1.5, 1.0], [4.5, -22, 1.2, 0.8]]) {
-    const pts = []; for (let i = 0; i < 18; i++) { const a = (i / 18) * Math.PI * 2, w = 0.75 + rr() * 0.4; pts.push(new THREE.Vector2(Math.cos(a) * rx * w, Math.sin(a) * rz * w)); }
-    const g = new THREE.ShapeGeometry(new THREE.Shape(pts)); g.rotateX(-Math.PI / 2); g.translate(x, 0.012, z); pg.push(g);
+  for (const [x, z, sx, sz, q] of [[-1.5, 27.4, 3.4, 2.0, 0], [2.4, 23.4, 1.9, 1.3, 1], [0.6, 15.2, 2.4, 1.5, 2], [-2.2, 4.6, 2.7, 1.7, 3], [1.6, -3.4, 1.7, 1.2, 1], [-1.0, -11.5, 2.9, 1.9, 0], [3.4, 31.2, 1.4, 1.9, 2], [-6.5, -17.5, 3.0, 2.1, 3], [4.5, -22, 2.5, 1.7, 0]]) {
+    const g = new THREE.PlaneGeometry(sx, sz), uv = g.attributes.uv;
+    for (let j = 0; j < uv.count; j++) uv.setXY(j, ((q % 2) + uv.getX(j)) / 2, uv.getY(j) / 2 + (q < 2 ? 0.5 : 0));
+    g.rotateX(-Math.PI / 2); g.rotateY(rr() * 0.6 - 0.3); g.translate(x, 0.012, z); pg.push(g);
   }
-  for (const g of pg) { const m = new THREE.Mesh(g, pm); m.receiveShadow = true; m.renderOrder = 1; scene.add(m); }
+  { const m = new THREE.Mesh(mergeGeometries(pg), pm); m.receiveShadow = true; m.renderOrder = 1; scene.add(m); }
 
   // autumn leaves: drifts in the gutters and against the shop plinths, a scatter across the setts
   const lt = leafTex(), quads = [0, 1, 2, 3].map((i) => { const g = new THREE.PlaneGeometry(0.11, 0.11); const uv = g.attributes.uv; for (let j = 0; j < uv.count; j++) uv.setX(j, (i + uv.getX(j)) / 4); g.rotateX(-Math.PI / 2); return g; });

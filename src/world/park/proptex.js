@@ -44,7 +44,7 @@ export function awningTex(kind, torn) {
       g.closePath(); g.fill();
     }
     g.globalCompositeOperation = 'source-over';
-    return texOf(c);
+    return texOf(c, true);   // u runs (x / 3 m) along the shop: must repeat or wide awnings clamp to one cream stripe
   });
 }
 
@@ -117,5 +117,30 @@ export function streakTex() {
       const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, `rgba(30,24,18,${a})`); gr.addColorStop(1, 'rgba(30,24,18,0)'); g.fillStyle = gr; g.fillRect(x, 0, w, h); }
     const gr = g.createLinearGradient(0, 0, 0, 40); gr.addColorStop(0, 'rgba(25,20,15,0.45)'); gr.addColorStop(1, 'rgba(25,20,15,0)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 40);
     return texOf(c);
+  });
+}
+
+// puddle alpha card (M4): an irregular, soft-edged pool — several overlapping noisy blobs, feathered rim, a few
+// dry islands (the crowns of setts poking through). Greyscale: white = water. 4 variants in a 2×2 atlas.
+export function puddleTex() {
+  return memo('puddle', () => {
+    const [c, g] = canvas(512, 512), r = mulberry(4242);
+    g.fillStyle = '#000'; g.fillRect(0, 0, 512, 512);
+    for (let q = 0; q < 4; q++) {
+      const ox = (q % 2) * 256, oy = Math.floor(q / 2) * 256;
+      g.save(); g.beginPath(); g.rect(ox, oy, 256, 256); g.clip();
+      g.filter = 'blur(7px)';
+      for (let b = 0; b < 5 + q; b++) {
+        const cx = ox + 128 + (r() - 0.5) * 110, cy = oy + 128 + (r() - 0.5) * 80, rx = 28 + r() * 46, ry = 18 + r() * 30;
+        g.fillStyle = `rgba(255,255,255,${0.75 + r() * 0.25})`; g.beginPath();
+        for (let k = 0; k <= 20; k++) { const a = (k / 20) * 6.283, w = 0.7 + r() * 0.45; g.lineTo(cx + Math.cos(a) * rx * w, cy + Math.sin(a) * ry * w); }
+        g.fill();
+      }
+      g.filter = 'blur(2px)'; g.fillStyle = 'rgba(0,0,0,0.6)';
+      for (let k = 0; k < 26; k++) { g.beginPath(); g.ellipse(ox + 30 + r() * 196, oy + 40 + r() * 176, 3 + r() * 6, 2 + r() * 4, r() * 3, 0, 7); g.fill(); }
+      g.restore();
+    }
+    g.filter = 'none';
+    const t = texOf(c); t.colorSpace = THREE.NoColorSpace; return t;
   });
 }
