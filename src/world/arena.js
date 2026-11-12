@@ -17,6 +17,7 @@ import { flushBulbs } from './park/showfront.js';
 import { parkMap, popcornCart, fingerPost } from './park/themed.js';
 import { buildDecay } from './park/decay.js';
 import { buildMainStreet, STREET } from './park/mainstreet.js';
+import { buildStreetDress, streetDecay } from './park/streetdress.js';
 
 export const ARENA = { half: 36, cell: 1 };
 export let PARK_MATS = null;
@@ -94,9 +95,9 @@ export function buildArena(scene, quality, A) {
   buildCarousel(ctx, 19.5, 9);
   // the park hub: a faded park guide by the way in, popcorn carts left where they stood, finger posts to the rides
   parkMap(ctx, -10.5, -17.2, 0.35);
-  popcornCart(ctx, -3.3, 14, 0.15, 1); popcornCart(ctx, 3.3, -8.5, -2.9, 2); popcornCart(ctx, -6, -16.5, 2.0, 3, { tipped: true });
+  // (Main Street's popcorn carts are M3 street props: park/streetdress.js)
   const toward = (x, z, tx, tz) => Math.atan2(-(tz - z), tx - x);
-  fingerPost(ctx, -5.3, 15.6, [['ASHLAND CASTLE', toward(-5.3, 15.6, 0, -36), '#2f63c4'], ['MIDWAY  ·  GAMES', toward(-5.3, 15.6, 30, 0), '#2f8a78'], ['THE GRAND WHEEL', toward(-5.3, 15.6, -64, -14), '#8a6a1c']]);
+  fingerPost(ctx, -9.6, 19.4, [['ASHLAND CASTLE', toward(-9.6, 19.4, 0, -36), '#2f63c4'], ['MIDWAY  ·  GAMES', toward(-9.6, 19.4, 30, 0), '#2f8a78'], ['THE GRAND WHEEL', toward(-9.6, 19.4, -64, -14), '#8a6a1c']]);   // in alley B, clear of the Clockwork Toys sign
   fingerPost(ctx, -14, 0, [['SPLASH FLUME', toward(-14, 0, -29, 0), '#1f5b57'], ['IRON COMET', toward(-14, 0, 70, 0), '#5a1a14'], ['MAIN GATE', toward(-14, 0, 0, 40), '#3b2f5a']]);
 
 
@@ -154,8 +155,11 @@ export function buildArena(scene, quality, A) {
       }
     }
   };
-  lampPost(-5.1, 5, 0, 2, true); lampPost(5.1, -5, Math.PI, 2, true); lampPost(-20, -26, 0, 1, true); lampPost(21, 20, Math.PI, 1, true);
-  for (const [x, z, lit] of [[-5.1, -11, 1], [5.1, 12.5, 0], [-31, -7, 0], [-30, 15.5, 1], [-5.1, 28.6, 1], [5.1, 28.6, 0], [31, -10, 1], [30, 2.5, 0], [-5.1, 24, 0], [17, -27, 1], [-14.5, -27.5, 0]]) if (!inArea(x, z, 1)) lampPost(x, z, Math.abs(x) > Math.abs(z) && Math.abs(x) > 6 ? Math.PI / 2 : 0, lit, false);
+  // Main Street's lamps (incl. the two real lights at (-4.95, 5) / (4.95, -5)) are M3 street props: park/streetprops.js
+  lampPost(-20, -26, 0, 1, true); lampPost(21, 20, Math.PI, 1, true);
+  for (const [x, z, lit] of [[-31, -7, 0], [-30, 15.5, 1], [31, -10, 1], [30, 2.5, 0], [17, -27, 1], [-14.5, -27.5, 0]]) if (!inArea(x, z, 1)) lampPost(x, z, Math.abs(x) > Math.abs(z) && Math.abs(x) > 6 ? Math.PI / 2 : 0, lit, false);
+
+  const m3 = buildStreetDress(ctx);
 
   // ---------- iron braziers (the old burning barrels: same spots, same fire) ----------
   const brazier = (x, z) => {
@@ -197,7 +201,7 @@ export function buildArena(scene, quality, A) {
   propAt('dead_tree_trunk_02', -27, 0, -21.5, 0.4, 0.75); colliders.push({ minX: -29, maxX: -25, minY: 0, maxY: 0.7, minZ: -22.3, maxZ: -20.7, walk: false, mat: 'wood' });
 
   // ---------- years of neglect: ivy, grass in the cracks, litter, spilled popcorn, a tipped bin and a fallen bench ----------
-  const decayStats = buildDecay(ctx, decayLayout(tufts, rr, inArea, colliders));
+  const decayStats = buildDecay(ctx, decayLayout(tufts, rr, inArea, colliders, streetDecay(rr)));
   { // a toppled litter bin, lid rolled off (dressing only, no collision; kept to the edges)
     for (const [x, z, a] of [[-33.6, 5.2, 0.6], [11.2, 33.3, 2.4], [-20.8, -33.7, -0.9]]) {
       const bin = lathe([[0.27, 0], [0.29, 0.04], [0.27, 0.08], [0.28, 0.85], [0.31, 0.9], [0.29, 0.94], [0.0, 0.94]], 18); bin.rotateZ(Math.PI / 2); bin.translate(0.47, 0.29, 0); bin.rotateY(a); bin.translate(x, 0, z); B.add(M.ironGreen, bin);
@@ -257,7 +261,7 @@ export function buildArena(scene, quality, A) {
   // ---------- skyline: the coaster's skeleton, dead woods, far park towers ----------
   const sky = buildSkyline(scene, M);
   const realLights = lights.filter((l) => !l.fake);
-  return { anim: (dt, t) => { for (const f of anim) f(dt, t); }, colliders, spawns, lights: realLights, glows: lights.filter((l) => l.fake), fires, nav: buildNav(colliders), stats: { streetTris: Math.round(streetStats.tris), decayTris: decayStats.tris, decayInstances: decayStats.instances, parkTris: Math.round(B.tris), propTris: Math.round(propTris), facadeTris: Math.round(B.tris), skyline: { buildings: sky.count, tris: sky.tris, drawCalls: sky.drawCalls }, festiveTris: Math.round(festive.tris || 0) } };
+  return { anim: (dt, t) => { for (const f of anim) f(dt, t); }, colliders, spawns, lights: realLights, glows: lights.filter((l) => l.fake), fires, nav: buildNav(colliders), stats: { streetTris: Math.round(streetStats.tris), decayTris: decayStats.tris, decayInstances: decayStats.instances, parkTris: Math.round(B.tris), propTris: Math.round(propTris), facadeTris: Math.round(B.tris), skyline: { buildings: sky.count, tris: sky.tris, drawCalls: sky.drawCalls }, festiveTris: Math.round(festive.tris || 0), m3 } };
 }
 
 // ---------- navigation grid: floor height per cell + blocked cells ----------
@@ -283,7 +287,7 @@ function buildNav(colliders) {
 // where the neglect shows: ivy up the castle, towers, gate, lodges and service courts; grass along every
 // wall base, kerb and seam; litter blown along Main Street, the hub and the courtyard; popcorn spilled
 // round the carts. All dressing: nothing here collides.
-function decayLayout(tufts, rr, inArea, colliders) {
+function decayLayout(tufts, rr, inArea, colliders, street) {
   const ivy = [];
   // castle front (faces +z at z -35.5) and tower faces
   for (const [x, w, h] of [[-40, 3.2, 8.5], [-31, 2.6, 6.5], [-22, 3.0, 9.5], [-17, 2.2, 5.5], [18, 2.8, 7.5], [24, 3.4, 10], [33, 2.4, 6], [41, 3.0, 8]]) ivy.push([x, 0, -35.45, w, h, 0]);
@@ -311,6 +315,7 @@ function decayLayout(tufts, rr, inArea, colliders) {
   // litter: down Main Street (carriageway and both walks), the alleys, the square, the courtyard
   const litterZones = [[-4.3, 4.3, -14, 35.4, 95], [-7.4, -4.8, -13.8, -2.7, 9, 0.15], [-7.4, -4.8, 2.7, 16.3, 11, 0.15], [-7.4, -4.8, 20.2, 33.3, 11, 0.15], [4.8, 7.4, -13.8, -2.7, 9, 0.15], [4.8, 7.4, 2.7, 16.3, 11, 0.15], [4.8, 7.4, 20.2, 33.3, 11, 0.15], [-13.4, 13.4, -2.4, 2.4, 14], [-13.4, 13.4, 16.6, 19.9, 10], [-14, 14, -24.5, -14.2, 20],
     [-19.5, 19.5, -35.3, -25.5, 55], [-34, 34, -34, 34, 70], [-8, 8, -54, -45, 18], [-8, 8, 45, 54, 18]];
-  const spills = [[-6.6, -15.6, 1.5, 180], [-2.6, 14.6, 0.7, 45], [2.7, -9.0, 0.6, 35], [2, 22, 0.4, 14], [-3, -27.5, 0.5, 18]];
+  const spills = [[2, 22, 0.4, 14], [-3, -27.5, 0.5, 18], ...street.spills];
+  ivy.push(...street.ivy); tufts.push(...street.tufts); litterZones.push(...street.litter);
   return { ivy, tufts, litterZones, spills };
 }

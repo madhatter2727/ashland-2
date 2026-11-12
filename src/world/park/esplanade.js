@@ -67,13 +67,14 @@ export function buildEsplanade(ctx) {
     const p = F.point(x - 0.35, 0, -7.6); turnstile(ctx, p.x, p.z, F.rotY + (i % 3 === 1 ? 0.4 : 0));
     F.geo(M.iron, ironRailing(1.6, 1.05, 0.14).rotateY(Math.PI / 2).translate(x + 0.35, 0, -7.6));
   }
-  for (const [x, z, i] of [[-5.5, 21, 0], [5.5, 21, 1], [-5.5, 27, 2], [5.5, 27, 3]]) bannerPole(ctx, x, z, i);
-  // bunting: swags across Main Street between the banner poles, and from the arch to the lodges
-  const fest = ctx.festive, W = (x, y, z) => new THREE.Vector3(x, y, z);
-  fest.bunting(W(-5.5, 5.9, 21), W(5.5, 5.9, 21), { sag: 1.0, seed: 21 });
-  fest.bunting(W(5.5, 5.9, 27), W(-5.5, 5.9, 27), { sag: 1.0, seed: 27, broken: true });
-  for (const sx of [-1, 1]) { fest.bunting(W(sx * 5.5, 5.9, 21), W(sx * 5.5, 5.9, 27), { sag: 0.6, seed: 3 + sx });
-    fest.bunting(W(sx * 5.5, 5.9, 27), W(sx * 4.95, 10.4, 34.6), { sag: 0.9, seed: 7 + sx });
+  // (the old banner poles at x ±5.5 gave way to M3's lamp standards: the bunting now hangs off the lamp tops)
+  // bunting: swags across Main Street between the lamps, along both kerbs, and from the arch to the lodges
+  const fest = ctx.festive, W = (x, y, z) => new THREE.Vector3(x, y, z), LX = 4.95, LY = 4.78;
+  fest.bunting(W(-LX, LY, 24), W(LX, LY, 24), { sag: 1.0, seed: 21 });
+  fest.bunting(W(LX, LY, 30.5), W(-LX, LY, 30.5), { sag: 1.0, seed: 27, broken: true });
+  fest.bunting(W(-LX, LY, 13.6), W(LX, LY, 13.6), { sag: 0.9, seed: 31 });
+  fest.bunting(W(LX, LY, -5), W(-LX, LY, -5), { sag: 0.9, seed: 33 });
+  for (const sx of [-1, 1]) { fest.bunting(W(sx * LX, LY, 24), W(sx * LX, LY, 30.5), { sag: 0.6, seed: 3 + sx });
     fest.bunting(W(0, 13.6, 35.7), W(sx * 13, 10.6, 33.4), { sag: 1.4, seed: 11 + sx });
     fest.bunting(W(sx * 13, 10.6, 33.4), W(sx * 24, 10.6, 33.4), { sag: 1.2, seed: 13 + sx, broken: sx > 0 }); }
 }

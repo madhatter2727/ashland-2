@@ -184,3 +184,34 @@ Files:
   `shopb`, `shopc` and `alley`; M2 set in `shots/m2-*.png`.
 - Left for M3/M4: awnings, sign lamps, teddy bear behind W7's smashed pane, ivy on facades, flower boxes; consider instancing
   the window modules if M3 pushes the park total over ~0.8 M.
+
+## 7. As built (M3 — street props + decay)
+
+Files:
+- `src/world/park/proptex.js` — canvas textures: `awningTex(kind, torn)` (red/cream or plum/cream canvas, sun fade, water
+  stains, scalloped + frayed valance with missing scallops, rips as alpha holes), `castleBannerTex(v)` (deep purple, gold
+  border, generic Ashland Castle silhouette + stars, swallow-tail foot, fade, streaks, tears/holes), `popcornSignTex`,
+  `leafTex` (4-leaf autumn atlas), `streakTex` (unused spare).
+- `src/world/park/streetprops.js` — `buildAwnings` (table `AWN`: lot → colour, torn, droop; sloped canvas sheet + valance
+  in the lot frame under the fascia at y 3.28 → 2.62, 1.45 m deep, iron wall rail + folding arms + roller bar) and
+  `streetLamp` / `buildStreetLamps` (octagonal base, fluted post, collars, two C-scroll arms with side globes, top lantern
+  globe, banner arm toward the street centre with a purple castle banner). Lamps at x ±4.95, z 30.5 / 24 / 13.6 / 5 / -5 /
+  -11.4. **Real lights unchanged in count**: the two street lamps that were real ((-4.95, 5) west, (4.95, -5) east) keep a
+  PointLight; every other lit globe is an emissive material (bloom makes the halo). Some globes are missing (broken bitmask).
+- `src/world/park/streetfurniture.js` — `bench` (iron scroll ends + timber slats), `planter` (timber trough, iron corners,
+  overgrown: instanced leaf mounds + blooms via `flushFlowers`), `bin` (green iron), `popcornCart2` (red body with POPCORN
+  boards both sides, cream trim, glass case of stale corn on brass posts, striped pitched canopy reusing `awningGeo`, spoked
+  wheels, castor + push handle; `tipped` lies on its side, case gone). All with AABB colliders.
+- `src/world/park/streetdress.js` — layout (`buildStreetDress`, called from `buildArena` after the lamp section): awnings,
+  lamps, 6 benches + 6 planters on the walks (bench faces the street), 5 bins by the kerb, `CARTS` (west (-3.45, 21.6), east
+  (3.45, -6.2), tipped (-1.9, 9.6) lying toward the kerb); two teddy bears (lumpy matted plush, slumped, head lolling, one
+  button eye + a thread from the empty socket) on a crate behind the smashed hero panes of W7 (Emporium) and E1 (Souvenirs);
+  9 mirror puddles (dark metallic, env-mapped) on the setts and in the square on top of the shader puddles; ~500 instanced
+  autumn leaves (gutters, shop plinths, setts, square). `streetDecay(rr)` feeds `decayLayout`: ivy drapes off upper cornices
+  of W1/W3/W7/E1/E2/E6 and climbers up E4/W5, kerb-crack weeds, extra litter on the carriageway, popcorn spills at the carts.
+- Removed: the 4 banner poles at (±5.5, 21/27) (bunting now hangs from the lamp tops at y 4.78: across at z 30.5, 24, 13.6,
+  -5, along both kerbs 24→30.5 and up to the gate arch), the old street lampPosts and the 3 old popcorn carts (incl. the
+  tipped one in the square) and their spills. Finger post moved from (-5.3, 15.6) (covered the Clockwork Toys sign) to
+  (-9.6, 19.4) in alley B.
+- Grime: storefront plaster/clapboard/trim materials got more `streaks` (1.8 / 1.7 / 1.6) and `grime` — still scaled by `DECAY`.
+- Middle of the carriageway (|x| < ~1.3) stays free of colliders from the gate to the square.
