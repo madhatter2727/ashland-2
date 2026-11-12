@@ -26,22 +26,24 @@ export const STREET = {
 };
 
 // style: A = 3-storey mansard emporium, B = 2½-storey front gable, C = 2-storey Italianate false front
-// side: -1 west (facade faces +x), +1 east (faces -x). z0 < z1. h = placeholder eaves height.
+// side: -1 west (facade faces +x), +1 east (faces -x). z0 < z1. h = height class (C: parapet top - 0.25, B: eaves + 2.9,
+// A: storey height 3.15 + (h - 12.5) * 0.3). flip mirrors door / bay side, seed drives all per-lot randomness,
+// dmg scales broken / boarded glass, smash forces one smashed display pane (hero windows for M3 props).
 export const LOTS = [
-  { id: 'W1', side: -1, z0: 26.5, z1: 33.5, style: 'A', paint: 'paintCream', h: 12.5, name: 'ASHLAND CONFECTIONERY', sign: '#5a2440' },
-  { id: 'W2', side: -1, z0: 20, z1: 26.5, style: 'C', paint: 'paintMustard', h: 9.0, name: 'KETTLE CORN CO.', sign: '#2f4a46' },
-  { id: 'W3', side: -1, z0: 12, z1: 16.5, style: 'B', paint: 'paintTeal', h: 10.5, name: 'CLOCKWORK TOYS', sign: '#5a2440' },
-  { id: 'W4', side: -1, z0: 7, z1: 12, style: 'C', paint: 'paintCoral', h: 8.5, name: 'PHOTOGRAPHS', sign: '#2f4a46' },
-  { id: 'W5', side: -1, z0: 2.5, z1: 7, style: 'B', paint: 'paintPlum', h: 10.0, name: 'HAT & RIBBON', sign: '#3a2a4a' },
-  { id: 'W6', side: -1, z0: -7.5, z1: -2.5, style: 'B', paint: 'paintMustard', h: 10.5, name: 'PENNY ARCADE', sign: '#5a2440' },
-  { id: 'W7', side: -1, z0: -14, z1: -7.5, style: 'A', paint: 'paintTeal', h: 13.0, name: 'ASHLAND EMPORIUM', sign: '#5a2440' },
-  { id: 'E1', side: 1, z0: 26.5, z1: 33.5, style: 'A', paint: 'paintCoral', h: 12.5, name: 'ASHLAND SOUVENIRS', sign: '#5a2440' },
-  { id: 'E2', side: 1, z0: 20, z1: 26.5, style: 'B', paint: 'paintBrick', h: 10.5, name: 'CANDY & TREATS', sign: '#5a2440' },
-  { id: 'E3', side: 1, z0: 12, z1: 16.5, style: 'C', paint: 'paintCream', h: 8.5, name: 'ICE CREAM PARLOUR', sign: '#2f4a46' },
-  { id: 'E4', side: 1, z0: 7, z1: 12, style: 'B', paint: 'paintTeal', h: 10.0, name: 'THE LANTERN SHOP', sign: '#3a2a4a' },
-  { id: 'E5', side: 1, z0: 2.5, z1: 7, style: 'C', paint: 'paintMustard', h: 9.0, name: 'ASHLAND GAZETTE', sign: '#2f4a46' },
-  { id: 'E6', side: 1, z0: -7.5, z1: -2.5, style: 'C', paint: 'paintPlum', h: 8.5, name: 'MUSIC BOXES', sign: '#2f4a46' },
-  { id: 'E7', side: 1, z0: -14, z1: -7.5, style: 'A', paint: 'paintCream', h: 13.0, name: 'STARLIGHT CINEMA', sign: '#5a2440' },
+  { id: 'W1', side: -1, z0: 26.5, z1: 33.5, style: 'A', paint: 'paintCream', h: 12.5, name: 'ASHLAND CONFECTIONERY', sign: '#5a2440', flip: false, seed: 11, dmg: 1.0, smash: true },
+  { id: 'W2', side: -1, z0: 20, z1: 26.5, style: 'C', paint: 'paintMustard', h: 9.0, name: 'KETTLE CORN CO.', sign: '#2f4a46', flip: true, seed: 23, dmg: 0.8 },
+  { id: 'W3', side: -1, z0: 12, z1: 16.5, style: 'B', paint: 'paintTeal', h: 10.5, name: 'CLOCKWORK TOYS', sign: '#5a2440', flip: false, seed: 37, dmg: 1.2 },
+  { id: 'W4', side: -1, z0: 7, z1: 12, style: 'C', paint: 'paintCoral', h: 8.5, name: 'PHOTOGRAPHS', sign: '#2f4a46', flip: true, seed: 41, dmg: 1.4 },
+  { id: 'W5', side: -1, z0: 2.5, z1: 7, style: 'B', paint: 'paintPlum', h: 10.0, name: 'HAT & RIBBON', sign: '#3a2a4a', flip: true, seed: 53, dmg: 0.9 },
+  { id: 'W6', side: -1, z0: -7.5, z1: -2.5, style: 'B', paint: 'paintMustard', h: 10.5, name: 'PENNY ARCADE', sign: '#5a2440', flip: false, seed: 67, dmg: 1.5 },
+  { id: 'W7', side: -1, z0: -14, z1: -7.5, style: 'A', paint: 'paintTeal', h: 13.0, name: 'ASHLAND EMPORIUM', sign: '#5a2440', flip: false, seed: 71, dmg: 1.1, smash: true },
+  { id: 'E1', side: 1, z0: 26.5, z1: 33.5, style: 'A', paint: 'paintCoral', h: 12.5, name: 'ASHLAND SOUVENIRS', sign: '#5a2440', flip: true, seed: 83, dmg: 1.2, smash: true },
+  { id: 'E2', side: 1, z0: 20, z1: 26.5, style: 'B', paint: 'paintBrick', h: 10.5, name: 'CANDY & TREATS', sign: '#5a2440', flip: true, seed: 97, dmg: 0.8 },
+  { id: 'E3', side: 1, z0: 12, z1: 16.5, style: 'C', paint: 'paintCream', h: 8.5, name: 'ICE CREAM PARLOUR', sign: '#2f4a46', flip: false, seed: 101, dmg: 1.0 },
+  { id: 'E4', side: 1, z0: 7, z1: 12, style: 'B', paint: 'paintTeal', h: 10.0, name: 'THE LANTERN SHOP', sign: '#3a2a4a', flip: true, seed: 113, dmg: 1.3 },
+  { id: 'E5', side: 1, z0: 2.5, z1: 7, style: 'C', paint: 'paintMustard', h: 9.0, name: 'ASHLAND GAZETTE', sign: '#2f4a46', flip: false, seed: 127, dmg: 1.6 },
+  { id: 'E6', side: 1, z0: -7.5, z1: -2.5, style: 'C', paint: 'paintPlum', h: 8.5, name: 'MUSIC BOXES', sign: '#2f4a46', flip: true, seed: 131, dmg: 0.9 },
+  { id: 'E7', side: 1, z0: -14, z1: -7.5, style: 'A', paint: 'paintCream', h: 13.0, name: 'STARLIGHT CINEMA', sign: '#5a2440', flip: true, seed: 139, dmg: 1.0, smash: true },
 ];
 
 export function buildMainStreet(ctx) {

@@ -33,7 +33,7 @@ export function shopSign(name, { bg = '#5a2440', fg = '#d8b76a', W = 1024, H = 5
   for (const [txt, wt, sz] of lines) {
     const px = sz * H; y += px * 0.54;
     g.font = `${wt} ${px}px ${SERIF}`;
-    const mw = g.measureText(txt).width, k = Math.min(1, (W * 0.76) / mw);
+    const mw = g.measureText(txt).width, k = Math.min(1, (W * 0.7) / mw);
     g.save(); g.translate(W / 2, y); g.scale(k, 1);
     g.fillStyle = 'rgba(15,6,4,.75)'; g.fillText(txt, 5, 6);
     const lg = g.createLinearGradient(0, -px / 2, 0, px / 2); lg.addColorStop(0, '#f1d891'); lg.addColorStop(0.5, fg); lg.addColorStop(1, '#8e6a2e');

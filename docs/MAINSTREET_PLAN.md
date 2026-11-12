@@ -1,6 +1,6 @@
 # Main Street plan (Ashland 2) — milestone 1 of 4
 
-Status: M1 = layout groundwork (this doc + street surface + placeholder lots with colliders + spawn).
+Status: M1 = layout groundwork (done, 630daee). **M2 = storefronts (done)** — see §6.
 M2 = storefronts (3 modular styles), M3 = props/decay, M4 = polish. Update this file as things change.
 
 ## 1. How the current world is built (pass 5 baseline)
@@ -139,3 +139,48 @@ Target after M2/M3: park ≤ ~0.85 M; if over, drop the outside lodge porches' d
   reports the street + placeholder geometry.
 - `lotFrame(B, lot)` gives M2 a frame per lot: origin at the facade centre, local +z into the street, x along the facade.
 - test_m13.py: three "plaza" points that now fall inside lots moved onto the street (see the comment in the test).
+
+## 6. As built (M2 — storefronts)
+
+Files:
+- `src/world/park/storefront.js` — the kit. `buildStorefront(ctx, F, lot, {depth, exposed})` → `{ top }` builds one lot in its
+  `lotFrame` and returns the roof/finial height used for the lot collider. Shared modules:
+  `slab` (wall with real openings, 0.3 m thick), `sash` (glass in the reveal, sash ring + glazing bars, sill, moulded surround,
+  hood: keystone `arch` / `pediment` / bracketed `cap`, roller blinds, boards), `shopfront` (piers + slim pilasters, stall risers
+  with raised panels, mullioned display windows + transom lights, recessed door with glazed returns and mosaic step, fascia,
+  cornice, a shallow dark shop behind with shelves of dusty stock and a display table), `signBoard` (crest / arch / board shapes:
+  extruded dark backing + a shaped face with a per-lot canvas texture), `shell` (body, cavity side walls, floor plates, dark back
+  plane; back walls with windows + back door; exposed side walls with windows), `flatWin`, `chimney`, `quoins`, `bracket`,
+  `ironRail`, `ironCresting`, `finial`.
+- `src/world/park/sftex.js` — canvas textures: `shopSign` (gold serif lettering with drop shadow, gilt borders, fade, chips, drips;
+  "ASHLAND X" lots get an italic *Ashland* over caps), `glassTex` (dust/grime + alpha: intact, cracked spider-web, smashed star hole),
+  `blindTex`.
+- Depth layers per facade: wall slab (z -0.3..0) → glass 0.15 m back in the reveal → cavity (z -1.45..-0.3) with floor plates,
+  blinds and an `interiorMaterial` back plane (rare warm lamp) → solid body. Glass is a reflective (env-mapped) transparent
+  standard material, three damage kinds × two dust variants, merged per material.
+- Styles: **A** 3 storeys (storey 3.15 m ± h), centred door, crested board standing on the shop cornice, French doors onto two
+  iron balconies on consoles either side of the board, arched keystone windows, pilaster strips, dentils + paired brackets +
+  deep cornice, slate mansard with arched dormers (pediment + slate roof), iron cresting on the curb, corner finials, chimney.
+  **B** clapboard front gable: canted oriel bay over the shop (panelled base, three glazed facets, lean-to slate roof, brackets),
+  side sash with pediment on wide lots, round-headed attic window, corner boards, shingle roof, fretted bargeboards, king post
+  + collar + pendant, iron spike finial, chimney. **C** Italianate false front: 2–3 tall segmental windows with bracketed caps,
+  quoins, frieze + dentils + paired scroll brackets + cornice, panelled parapet, triangular or segmental pediment, urn/ball
+  terminals, low dark roof behind, chimney.
+- LOTS fields added: `flip` (door / bay side), `seed` (all per-lot randomness), `dmg` (scales cracked / smashed / boarded glass),
+  `smash` (forces one smashed display pane — W1, W7, E1, E7: the hero windows for M3's teddy bear / props). `h` is a height class
+  (see the comment on LOTS). `exposure(lot)` finds block ends / taller-than-neighbour walls; those get windows.
+- Collider per lot as in M1: one AABB `x ±w/2, y 0..top, z -6..+0.14` (covers pilasters/plinths; balconies, bays and signs are
+  overhead). Nav unchanged in principle (lots were already blocked).
+- Materials (`materials.js`): paints now use `trueTint` with a new `weather` option `mono` (desaturate the base texture before
+  tinting) + `con` (compress its contrast around its mean, stored as `avgL`) — the per-channel tint multipliers (up to ~3× for
+  cream) were blowing the texture's pale chips out to white. The weather-peel layer got an optional `peelA` threshold
+  (the old `0.7 - peel*0.13` barely changes coverage); storefront paints use small (`peelScale` 8–10), sparse (`peelA` ≈ 0.75) peel.
+  All storefront weathering still goes through `weather()` → `DECAY`.
+- Kit (`kit.js`): `Builder.add` honours `mat.userData.swapUV` (clapboard planks run horizontally).
+- Triangles: parkTris 673.5 k (M1) → 754.0 k; `streetTris` (street surface + storefronts) 30.6 k → 111.0 k, i.e. the 14
+  storefronts ≈ 80 k (budget was ≤ 140 k). Sign faces are 14 extra meshes (one canvas texture each); everything else is merged
+  per material by the Builder.
+- Screenshots: `shots_a2.py URL prefix outdir [views]` now also has `emporium` (W7 at ~6 m, cf. docs/2-emporium-closeup.png),
+  `shopb`, `shopc` and `alley`; M2 set in `shots/m2-*.png`.
+- Left for M3/M4: awnings, sign lamps, teddy bear behind W7's smashed pane, ivy on facades, flower boxes; consider instancing
+  the window modules if M3 pushes the park total over ~0.8 M.

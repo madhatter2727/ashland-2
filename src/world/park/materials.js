@@ -59,7 +59,7 @@ export function weather(mat, o = {}) {
           ${W.rust > 0 ? `diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.36, 0.17, 0.07) * (0.7 + 0.5 * wn3(vWP * 3.0)), clamp(streak * ${f(W.rust)} * 1.4, 0.0, 0.7));` : ''}
           ${W.fade > 0 ? `{ float fl = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114)); float fz = ${f(W.fade)} * (0.55 + 0.45 * wn3(vWP * 0.31 + 3.0)) * (0.6 + 0.4 * wUp + 0.4 * smoothstep(1.0, 6.0, h));
             diffuseColor.rgb = mix(diffuseColor.rgb, vec3(fl) * 0.78 + vec3(0.13, 0.125, 0.115), clamp(fz, 0.0, 0.8)); }` : ''}
-          ${W.peel > 0 ? `{ float pn = wfbm(vWP * ${f(W.peelScale)} + 21.0) + wn3(vWP * 6.0) * 0.1; float a = 0.7 - ${f(W.peel)} * 0.13;
+          ${W.peel > 0 ? `{ float pn = wfbm(vWP * ${f(W.peelScale)} + 21.0) + wn3(vWP * 6.0) * 0.1; float a = ${W.peelA ? f(W.peelA) : `0.7 - ${f(W.peel)} * 0.13`};
             float pm = smoothstep(a, a + 0.008, pn), rim = smoothstep(a - 0.025, a, pn) - pm;
             diffuseColor.rgb = mix(diffuseColor.rgb, vec3(${pc}) * (0.75 + 0.5 * wn3(vWP * 9.0)), pm);
             diffuseColor.rgb *= 1.0 - 0.35 * rim; }` : ''}
@@ -203,14 +203,14 @@ export function makeMaterials(A) {
   // tint reads as that colour on any base set (the plaster set is red, the plank set grey-green).
   // Bodies: cracked painted plaster (fronts of A/C, all walls), horizontal clapboard (B fronts/sides);
   // cream trim; darker joinery paints for shopfronts; shingle roofs. Peel patches are small (peelScale 6).
-  const plaster = (c) => trueTint(P('peeling_painted_wall', { normalScale: 0.85 }, 1 / 0.9, { grime: 0.8, streaks: 1, wet: 0.35, moss: 0.15, height: 3.2, fade: 0.25, peel: 0.32, peelScale: 4.2, peelCol: [1, 0, 0], mono: 1, con: 0.35 }), c, 0.85);
-  const clap = (c) => { const m = trueTint(P('distressed_painted_planks', { normalScale: 1.25 }, 1 / 1.9, { grime: 0.75, streaks: 1, wet: 0.4, moss: 0.15, height: 3, fade: 0.25, peel: 0.32, peelScale: 4.2, peelCol: [0.22, 0.2, 0.17], mono: 1, con: 0.6 }), c, 0.9); m.userData.swapUV = true; return m; };
-  const join = (c) => trueTint(P('distressed_painted_planks', { normalScale: 1.0 }, 1 / 1.2, { grime: 0.6, streaks: 0.9, wet: 0.35, height: 2, fade: 0.3, peel: 0.35, peelScale: 6, peelCol: [0.2, 0.18, 0.15], mono: 1, con: 0.5 }), c, 0.95);
+  const plaster = (c) => trueTint(P('peeling_painted_wall', { normalScale: 0.85 }, 1 / 0.9, { grime: 0.8, streaks: 1, wet: 0.35, moss: 0.15, height: 3.2, fade: 0.25, peel: 0.14, peelA: 0.74, peelScale: 9, peelCol: [0.2, 0.18, 0.15], mono: 1, con: 0.6 }), c, 0.85);
+  const clap = (c) => { const m = trueTint(P('distressed_painted_planks', { normalScale: 1.25 }, 1 / 1.9, { grime: 0.75, streaks: 1, wet: 0.4, moss: 0.15, height: 3, fade: 0.25, peel: 0.12, peelA: 0.75, peelScale: 8, peelCol: [0.22, 0.2, 0.17], mono: 1, con: 0.6 }), c, 0.9); m.userData.swapUV = true; return m; };
+  const join = (c) => trueTint(P('distressed_painted_planks', { normalScale: 1.0 }, 1 / 1.2, { grime: 0.6, streaks: 0.9, wet: 0.35, height: 2, fade: 0.3, peel: 0.12, peelA: 0.75, peelScale: 10, peelCol: [0.2, 0.18, 0.15], mono: 1, con: 0.5 }), c, 0.95);
   Object.assign(M, {
     paintTeal: plaster('#7d9a92'), paintPlum: plaster('#7d5a6b'), paintCoral: plaster('#c68a74'), paintMustard: plaster('#c7a35f'), paintCream: plaster('#d9ccb0'),
     paintBrick: P('red_bricks_04', { color: '#b06a56', normalScale: 1.1 }, 1 / 2.2, { grime: 0.9, streaks: 0.9, wet: 0.45, moss: 0.2, height: 3, fade: 0.3 }),
     clapTeal: clap('#7d9a92'), clapPlum: clap('#7d5a6b'), clapCoral: clap('#c68a74'), clapMustard: clap('#c7a35f'), clapCream: clap('#d9ccb0'), clapBrick: clap('#9a5a4a'),
-    trimCream: trueTint(P('white_stucco', { normalScale: 0.8 }, 1 / 1.1, { grime: 0.7, streaks: 1, wet: 0.35, moss: 0.1, height: 3, fade: 0.3, peel: 0.3, peelScale: 7, peelCol: [0.26, 0.23, 0.2] }), '#cfc1a2', 0.95),
+    trimCream: trueTint(P('white_stucco', { normalScale: 0.8 }, 1 / 1.1, { grime: 0.7, streaks: 1, wet: 0.35, moss: 0.1, height: 3, fade: 0.3, peel: 0.1, peelA: 0.76, peelScale: 10, peelCol: [0.26, 0.23, 0.2] }), '#cfc1a2', 0.95),
     joinPlum: join('#5b3a4b'), joinTeal: join('#3b5c58'), joinGreen: join('#3d5243'), joinRed: join('#6a3330'), joinNavy: join('#35405a'),
     shingle: tint(P('roof_slates_02', { normalScale: 1.4 }, 1 / 1.3, { grime: 0.4, streaks: 0.5, wet: 0.8, moss: 0.3, height: -10 }), '#857b74'),
   });

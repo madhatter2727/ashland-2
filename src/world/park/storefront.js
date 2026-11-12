@@ -50,6 +50,15 @@ export function shapeGeo(pts) {
   return g;
 }
 
+// fan-triangulated flat outline (star-shaped from c) with 0..1 bbox UVs — earcut drops triangles on the arched boards
+export function fanGeo(pts, c) {
+  let a = Infinity, b = -Infinity, e = Infinity, d = -Infinity; for (const [x, y] of pts) { a = Math.min(a, x); b = Math.max(b, x); e = Math.min(e, y); d = Math.max(d, y); }
+  const pos = [], uv = [], put = ([x, y]) => { pos.push(x, y, 0); uv.push((x - a) / (b - a), (y - e) / (d - e)); };
+  let area = 0; for (let i = 0; i < pts.length; i++) { const p = pts[i], q = pts[(i + 1) % pts.length]; area += p[0] * q[1] - q[0] * p[1]; }
+  for (let i = 0; i < pts.length; i++) { const p = pts[i], q = pts[(i + 1) % pts.length]; put(c); if (area > 0) { put(p); put(q); } else { put(q); put(p); } }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.computeVertexNormals(); return g;
+}
+
 // Italianate scroll bracket profile (out, up): sits under a cornice, `h` tall, projecting `p`
 export const bracketP = (h, p) => [[0, 0], [p * 0.18, 0], [p * 0.3, h * 0.1], [p * 0.36, h * 0.24], [p * 0.48, h * 0.4], [p * 0.66, h * 0.52], [p * 0.86, h * 0.62], [p, h * 0.76], [p, h], [0, h]];
 export function bracket(F, mat, x, y, h, p, t = 0.1) { F.geo(mat, molding(bracketP(h, p), x - t / 2, x + t / 2, y, 0)); }
@@ -85,7 +94,8 @@ export function sash(F, M, S, o, s) {
 }
 
 // pick damage for a pane: 0 ok, 1 cracked, 2 smashed, 3 boarded
-export function pickDmg(r, k = 1) { const v = r(); return v < 0.1 * k ? 2 : v < 0.24 * k ? 1 : v < 0.3 * k ? 3 : 0; }
+let DMGK = 1;
+export function pickDmg(r, k = 1) { k *= DMGK; const v = r(); return v < 0.1 * k ? 2 : v < 0.24 * k ? 1 : v < 0.3 * k ? 3 : 0; }
 
 // ---------- shop board (arched / crested / plain) with a gold-lettered canvas face ----------
 const arcPts = (u0, u1, v0, v1, n = 14, finial = 0) => { const out = []; for (let i = 0; i <= n; i++) { const t = i / n, u = u1 + (u0 - u1) * t; out.push([u, v0 + (v1 - v0) * Math.pow(Math.sin(Math.PI * t), 0.75) + finial * Math.exp(-(((u - 0.5) / 0.045) ** 2))]); } return out; };
@@ -98,11 +108,11 @@ export function signBoard(ctx, F, L, { shape = 'arch', w, h, x = 0, y, z = 0.06 
   const pts = SIGN_SHAPES[shape], textY = shape === 'board' ? 0.5 : shape === 'crest' ? 0.64 : 0.58;
   const scaled = (sw, sh, ox, oy) => pts.map(([u, v]) => [ox + u * sw, oy + v * sh]);
   // backing board (dark joinery) with a moulded edge, a little larger than the face
-  const back = new THREE.ExtrudeGeometry(new THREE.Shape(scaled(w + 0.14, h + 0.12, x - w / 2 - 0.07, y - 0.06).map(([a, b]) => new THREE.Vector2(a, b))), { depth: 0.09, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 1, curveSegments: 1 });
+  const back = new THREE.ExtrudeGeometry(new THREE.Shape(scaled(w + 0.14, h + 0.12, x - w / 2 - 0.07, y - 0.06).map(([a, b]) => new THREE.Vector2(a, b))), { depth: 0.09, bevelEnabled: false, curveSegments: 1 });
   back.translate(0, 0, z - 0.09); F.geo(L.signFrame, back);
   const outline = (g, W, H, ins) => { g.beginPath(); pts.forEach(([u, v], i) => { const px = ins + u * (W - 2 * ins), py = H - ins - v * (H - 2 * ins); i ? g.lineTo(px, py) : g.moveTo(px, py); }); g.closePath(); };
   const map = shopSign(L.lot.name, { bg: L.lot.sign, outline, seed: L.seed, textY, W: 1024, H: Math.round(1024 * Math.min(0.6, h / w)) });
-  const face = shapeGeo(scaled(w, h, x - w / 2, y)); face.translate(0, 0, z + 0.025); face.applyMatrix4(F.m);
+  const face = fanGeo(scaled(w, h, x - w / 2, y), [x, y + h * 0.4]); face.translate(0, 0, z + 0.012); face.applyMatrix4(F.m);
   const mesh = new THREE.Mesh(face, new THREE.MeshStandardMaterial({ map, roughness: 0.62, metalness: 0.15, envMapIntensity: 0.8 }));
   mesh.castShadow = true; mesh.receiveShadow = true; mesh.matrixAutoUpdate = false; ctx.scene.add(mesh);
 }
@@ -143,7 +153,7 @@ export function shopfront(F, M, S, L, { door = 'right', pil = 0.36 } = {}) {
     F.geo(trim, molding(P.sill(0.85), x0, x1, 0.72, -0.12));
     const n = Math.max(1, Math.round((x1 - x0) / 1.15)), pw = (x1 - x0) / n;
     for (let i = 0; i < n; i++) {
-      const p0 = x0 + i * pw, k = pickDmg(r, 1.5);
+      const p0 = x0 + i * pw, k = L.lot.smash && !L.smashed ? (L.smashed = 2) : pickDmg(r, 1.5);
       pane(S.glass[k === 3 ? 1 : k][Math.floor(r() * 2)], p0, p0 + pw, 0.8, 2.52, -0.16);
       pane(S.glass[r() < 0.2 ? 1 : 0][Math.floor(r() * 2)], p0, p0 + pw, 2.6, head - 0.08, -0.16);       // transom lights
       if (k === 3) for (let j = 0; j < 4; j++) { const g = new THREE.BoxGeometry(pw + 0.25, 0.22, 0.035); g.rotateZ((r() - 0.5) * 0.3); g.translate(p0 + pw / 2, 1.0 + j * 0.42, -0.06 + j * 0.01); F.geo(M.boards, g); }
@@ -228,6 +238,7 @@ const JOINS = ['joinPlum', 'joinTeal', 'joinGreen', 'joinRed', 'joinNavy'];
 // opts.exposed: [{ end: -1|1 (local -x / +x side), from: height the wall is exposed above }]
 export function buildStorefront(ctx, F, lot, opts = {}) {
   const { M } = ctx, S = sfMats(M), seed = lot.seed ?? (lot.id.charCodeAt(0) * 31 + lot.id.charCodeAt(1)), r = mulberry(seed * 7919 + 17);
+  DMGK = lot.dmg ?? 1;
   const w = lot.z1 - lot.z0, tone = lot.paint.slice(5), plaster = M[lot.paint], clap = M['clap' + tone] || plaster;
   const join = M[lot.join || JOINS[seed % JOINS.length]];
   const L = { lot, w, hw: w / 2 - 0.01, d: opts.depth ?? 6, r, seed, join, trim: M.trimCream, signFrame: join, exposed: opts.exposed || [] };
@@ -280,7 +291,7 @@ function styleB(ctx, F, M, S, L) {
   L.floors = [GF]; L.eaves = E;
   shell(F, M, S, L);
   shopfront(F, M, S, L, { door: lot.flip ? 'left' : 'right' });
-  signBoard(ctx, F, L, { shape: 'arch', w: Math.min(w - 1.3, 3.6), h: 1.05, y: 3.2, z: 0.47 });
+  signBoard(ctx, F, L, { shape: 'arch', w: Math.min(w - 1.3, 3.6), h: 1.0, y: 2.95, z: 0.3 });
   // front wall + gable as one slab with the bay opening, a side window (wide lots) and the attic window
   const side = w >= 5.6, bw = Math.min(2.5, w - (side ? 2.9 : 1.4)), bx = side ? (lot.flip ? hw - 0.7 - bw / 2 : -hw + 0.7 + bw / 2) : 0;
   const ops = [{ x0: bx - bw / 2 + 0.08, x1: bx + bw / 2 - 0.08, y0: GF + 0.95, spring: GF + 2.6, seg: -1 }];
@@ -339,11 +350,11 @@ function styleA(ctx, F, M, S, L) {
   shell(F, M, S, L);
   shopfront(F, M, S, L, { door: 'centre', pil: 0.42 });
   const cx = (i) => -hw + 0.45 + cw * (i + 0.5), mid = (n - 1) / 2;
-  const sgW = Math.min(cw + 0.5, 3.2);
-  signBoard(ctx, F, L, { shape: 'crest', w: sgW, h: 1.55, y: GF + 0.02, z: 0.2 });
+  const sgW = Math.min(cw + 0.9, 3.4);
+  signBoard(ctx, F, L, { shape: 'crest', w: sgW, h: 1.85, y: GF + 0.02, z: 0.2 });
   const ops = [], f2 = [], f3 = [], ww = 1.0;
   for (let i = 0; i < n; i++) {
-    const centre = n === 3 && i === 1, y0 = centre ? GF + 1.95 : GF + 0.2, sp = centre ? Math.min(GF + SH - 0.7, y0 + 0.75) : GF + SH - 0.95;
+    const centre = n === 3 && i === 1, y0 = centre ? GF + 2.1 : GF + 0.2, sp = centre ? Math.min(GF + SH - 0.7, y0 + 0.75) : GF + SH - 0.95;
     f2.push({ x0: cx(i) - ww / 2, x1: cx(i) + ww / 2, y0, spring: sp, seg: 0, door: !centre });
     const y3 = GF + SH + 0.65; f3.push({ x0: cx(i) - ww / 2, x1: cx(i) + ww / 2, y0: y3, spring: Math.min(E - 1.25, y3 + 1.5), seg: 0 });
   }
@@ -356,7 +367,7 @@ function styleA(ctx, F, M, S, L) {
   F.geo(trim, molding(P.string(1), -hw, hw, GF + SH - 0.05, 0));
   // balconies on the outer bays: stone slab on consoles, iron railing on three sides
   for (const i of [0, n - 1]) {
-    const x = cx(i), bl = Math.min(cw - 0.15, 2.0), dp = 0.85;
+    const e0 = i === 0 ? -hw + 0.25 : sgW / 2 + 0.14, e1 = i === 0 ? -sgW / 2 - 0.14 : hw - 0.25, x = (e0 + e1) / 2, bl = e1 - e0, dp = 0.85;
     F.box(trim, x - bl / 2, x + bl / 2, GF + 0.02, GF + 0.2, 0, dp);
     F.geo(trim, molding(P.string(0.7), x - bl / 2, x + bl / 2, GF + 0.02, dp - 0.08));
     for (const s of [-1, 1]) bracket(F, trim, x + s * (bl / 2 - 0.2), GF - 0.55, 0.57, dp - 0.05, 0.12);
