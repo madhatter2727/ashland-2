@@ -72,13 +72,14 @@ export function buildDecay(ctx, { ivy = [], tufts = [], litterZones = [], spills
   const tuft = (() => { const a = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0), b = a.clone().rotateY(Math.PI / 2); const g = new THREE.BufferGeometry();
     for (const k of ['position', 'normal', 'uv']) g.setAttribute(k, new THREE.BufferAttribute(new Float32Array([...a.attributes[k].array, ...b.attributes[k].array]), a.attributes[k].itemSize));
     g.setIndex([...a.index.array, ...[...b.index.array].map((v) => v + 4)]); return g; })();
-  inst(tuft, gm, tufts.map(([x, z, s]) => ({ m: new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), q.setFromAxisAngle(UP, r() * 6.3).clone(), new THREE.Vector3(s * (0.7 + r() * 0.6), s, s)) })));
+  inst(tuft, gm, tufts.map(([x, z, s, y = 0]) => ({ m: new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), q.setFromAxisAngle(UP, r() * 6.3).clone(), new THREE.Vector3(s * (0.7 + r() * 0.6), s, s)) })));
   // ---- litter: paper scraps, popcorn boxes, faded park maps
   const papers = [], boxes = [], maps = [], pal = ['#b8b2a2', '#a99f80', '#998880', '#b0a088', '#8894a0', '#a68078'].map((c) => new THREE.Color(c));
-  for (const [x0, x1, z0, z1, n] of litterZones) for (let i = 0; i < n; i++) {
+  for (const [x0, x1, z0, z1, n, y0 = 0] of litterZones) for (let i = 0; i < n; i++) {
     const p = new THREE.Vector3(x0 + r() * (x1 - x0), 0.012 + r() * 0.01, z0 + r() * (z1 - z0)), k = r();
+    p.y += y0 * (k < 0.72 || k >= 0.9 ? 1 : 0);
     if (k < 0.72) papers.push({ m: new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + (r() - 0.5) * 0.3, 0, r() * 6.3)), new THREE.Vector3(0.14 + r() * 0.16, 0.18 + r() * 0.16, 1)), c: pal[Math.floor(r() * pal.length)] });
-    else if (k < 0.9) { const lying = r() < 0.6; p.y = lying ? 0.045 : 0.065; boxes.push({ m: new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromEuler(new THREE.Euler(lying ? Math.PI / 2 : 0, r() * 6.3, 0, 'YXZ')), new THREE.Vector3(1, 1, 1)) }); }
+    else if (k < 0.9) { const lying = r() < 0.6; p.y = lying ? 0.045 : 0.065; p.y += y0; boxes.push({ m: new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromEuler(new THREE.Euler(lying ? Math.PI / 2 : 0, r() * 6.3, 0, 'YXZ')), new THREE.Vector3(1, 1, 1)) }); }
     else maps.push({ m: new THREE.Matrix4().compose(p, new THREE.Quaternion().setFromEuler(new THREE.Euler(-Math.PI / 2 + (r() - 0.5) * 0.25, 0, r() * 6.3)), new THREE.Vector3(0.42, 0.3, 1)) });
   }
   inst(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ roughness: 0.95, side: THREE.DoubleSide }), papers);

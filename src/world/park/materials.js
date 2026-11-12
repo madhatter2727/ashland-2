@@ -174,6 +174,19 @@ export function makeMaterials(A) {
     hubCobble: tint(P('cobblestone_color', { normalScale: 1.1 }, 1 / 2.2, { grime: 0.45, streaks: 0, wet: 0.6, puddles: 0.8, moss: 0.4, height: 0.1, cracks: 1 }), '#e8d8c0'),
     terracotta: tint(P('terracotta_tint', { normalScale: 0.9 }, 1 / 1.2, { grime: 0.45, streaks: 0, wet: 0.6, puddles: 0.8, moss: 0.4, height: 0.1, cracks: 1 }), '#c9714e'),
     inlayBlue: tint(P('terracotta_tint', { normalScale: 0.9 }, 1 / 1.2, { grime: 0.45, streaks: 0, wet: 0.6, puddles: 0.8, moss: 0.4, height: 0.1, cracks: 1 }), '#5a7ea8'),
+    // Main Street: worn grey-brown setts on the carriageway, dark gutter setts, granite kerbs, brick sidewalks
+    // with a sandstone flag band; and the shop paints (faded teal, plum, coral, mustard, cream, brick red)
+    streetSett: tint(P('mossy_cobblestone', { normalScale: 1.35 }, 1 / 1.5, { grime: 0.55, streaks: 0, wet: 1, puddles: 1, moss: 0.5, height: 0.1, cracks: 1 }), '#b3a796'),
+    gutterSett: tint(P('cobblestone_color', { normalScale: 1.3 }, 1 / 0.9, { grime: 0.9, streaks: 0, wet: 1, puddles: 1, moss: 0.7, height: 0.1 }), '#6f675d'),
+    kerb: tint(P('white_sandstone_blocks_02', { normalScale: 1.2 }, 1 / 1.1, { grime: 0.9, streaks: 0.4, wet: 0.7, moss: 0.5, height: 0.6, cracks: 1 }), '#a49c8f'),
+    walkBrick: tint(P('brick_pave_tint', { normalScale: 1.15 }, 1 / 1.3, { grime: 0.6, streaks: 0, wet: 0.7, puddles: 0.7, moss: 0.45, height: 0.1, cracks: 1 }), '#a65f4c'),
+    walkFlag: tint(P('herringbone_pavement_03', { normalScale: 1.1 }, 1 / 1.6, { grime: 0.6, streaks: 0, wet: 0.7, puddles: 0.6, moss: 0.4, height: 0.1, cracks: 1 }), '#bcae98'),
+    paintTeal: tint(P('peeling_painted_wall', { normalScale: 0.9 }, 1 / 2.6, { grime: 0.8, streaks: 1, wet: 0.4, moss: 0.2, height: 3.5, fade: 0.6, peel: 0.6 }), '#6f9690'),
+    paintPlum: tint(P('peeling_painted_wall', { normalScale: 0.9 }, 1 / 2.6, { grime: 0.8, streaks: 1, wet: 0.4, moss: 0.2, height: 3.5, fade: 0.6, peel: 0.6 }), '#7c4e68'),
+    paintCoral: tint(P('peeling_painted_wall', { normalScale: 0.9 }, 1 / 2.6, { grime: 0.8, streaks: 1, wet: 0.4, moss: 0.2, height: 3.5, fade: 0.6, peel: 0.6 }), '#d08670'),
+    paintMustard: tint(P('peeling_painted_wall', { normalScale: 0.9 }, 1 / 2.6, { grime: 0.8, streaks: 1, wet: 0.4, moss: 0.2, height: 3.5, fade: 0.6, peel: 0.6 }), '#d1aa58'),
+    paintCream: tint(P('peeling_painted_wall', { normalScale: 0.9 }, 1 / 2.6, { grime: 0.8, streaks: 1, wet: 0.4, moss: 0.2, height: 3.5, fade: 0.6, peel: 0.6 }), '#eadcc0'),
+    paintBrick: tint(P('red_bricks_04', { normalScale: 1.1 }, 1 / 2.2, { grime: 0.9, streaks: 0.9, wet: 0.45, moss: 0.2, height: 3, fade: 0.3 }), '#b46a55'),
     bark: P('tree_bark_03', { color: '#7d756c', normalScale: 1.5 }, 1 / 1.6, { grime: 0.2, streaks: 0.5, wet: 0.5, moss: 0.4, height: 2 }),
   };
   M.popcorn = new THREE.MeshStandardMaterial({ color: '#d9bf7c', roughness: 0.95 }); M.popcorn.userData.density = 1;

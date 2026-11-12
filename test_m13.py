@@ -50,7 +50,8 @@ with sync_playwright() as p:
       H.spawn = orig; H.reset(); H.running = false; game.state = 'play';
       return { ...log, fromAreaReachedPlayerS: leave }; }""")
     # the Colossus: chase the player into each area and back out again
-    CASES = [('boss to roof', -31, 3.2, -31.5, -6, -24), ('boss to underpass', 30, 0, 32, 10, 14), ('boss out of underpass', 8, 0, 10, 31, 31), ('boss off roof', -10, 0, -8, -31, -31)]
+    # Ashland 2: Main Street lots fill x 7.5..13.5 on both sides, so the plaza points sit on the street (x = ±3)
+    CASES = [('boss to roof', -31, 3.2, -31.5, -6, -24), ('boss to underpass', 30, 0, 32, 3, 14), ('boss out of underpass', 3, 0, 10, 31, 31), ('boss off roof', -3, 0, -8, -31, -31)]
     R['boss'] = ev("""(cases) => { const H = game.horde, P = game.player, V = P.pos.constructor, out = []; game.state = 'paused';
       for (const [name, px, py, pz, bx, bz] of cases) {
         H.reset(); H.running = false; H.wave = 5; P.pos.set(px, py, pz); P.vel.set(0, 0, 0);

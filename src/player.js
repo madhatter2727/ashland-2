@@ -6,9 +6,9 @@ const STAND = 1.75, CROUCH = 1.12, RADIUS = 0.32, STEP = 0.5;
 export class Player {
   constructor(colliders) {
     this.colliders = colliders;
-    this.pos = new THREE.Vector3(0, 2.0, 2);
+    this.pos = new THREE.Vector3(0, 0, 33);
     this.vel = new THREE.Vector3();
-    this.yaw = 0; this.pitch = 0.12; // same castle-facing pose as reset()
+    this.yaw = 0; this.pitch = 0.045; // same castle-facing pose as reset()
     this.height = STAND; this.eye = STAND - 0.1; this.eyeSmooth = this.eye;
     this.grounded = false; this.coyote = 0; this.landImpact = 0;
     this.sprinting = false; this.crouching = false; this.sliding = 0; this.slideDir = new THREE.Vector3();
@@ -21,7 +21,7 @@ export class Player {
   }
 
   reset() {
-    this.pos.set(0, 2.0, 1.5); this.vel.set(0, 0, 0); this.yaw = 0; this.pitch = 0.12; // face the castle
+    this.pos.set(0, 0, 33); this.vel.set(0, 0, 0); this.yaw = 0; this.pitch = 0.045; // south end of Main Street, facing the castle
     this.health = this.maxHealth; this.alive = true; this.sliding = 0; this.armor = 0;
   }
 

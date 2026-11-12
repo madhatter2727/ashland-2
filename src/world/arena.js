@@ -16,6 +16,7 @@ import { buildGardens } from './park/gardens.js';
 import { flushBulbs } from './park/showfront.js';
 import { parkMap, popcornCart, fingerPost } from './park/themed.js';
 import { buildDecay } from './park/decay.js';
+import { buildMainStreet, STREET } from './park/mainstreet.js';
 
 export const ARENA = { half: 36, cell: 1 };
 export let PARK_MATS = null;
@@ -39,27 +40,20 @@ export function buildArena(scene, quality, A) {
   const plane = (mat, x0, x1, z0, z1, y = 0) => { const g = new THREE.PlaneGeometry(x1 - x0, z1 - z0, Math.max(1, Math.round((x1 - x0) / 6)), Math.max(1, Math.round((z1 - z0) / 6))); g.rotateX(-Math.PI / 2); g.translate((x0 + x1) / 2, y, (z0 + z1) / 2); B.add(mat, g); };
   plane(M.paving, -110, 110, -110, 110);
   colliders.push({ minX: -200, maxX: 200, minY: -1, maxY: 0, minZ: -200, maxZ: 200, walk: true, mat: 'concrete', ground: true });
-  // formal marble plaza round the bandstand, and a marble walk along the palace front
-  // the hub: cream colour-cobbles with a terracotta border and a terracotta / blue ring round the bandstand
-  plane(M.hubCobble, -9, 9, -12, 12, 0.002);
   const ring = (mat, r0, r1, x, z, y) => { const g = new THREE.RingGeometry(r0, r1, 64, 1); g.rotateX(-Math.PI / 2); g.translate(x, y, z); B.add(mat, g); };
-  ring(M.terracotta, 6.9, 7.7, 0, 0, 0.004); ring(M.inlayBlue, 7.7, 7.95, 0, 0, 0.004); ring(M.inlayBlue, 6.65, 6.9, 0, 0, 0.004);
-  for (const [x0, x1, z0, z1] of [[-9, 9, -12, -11.4], [-9, 9, 11.4, 12], [-9, -8.4, -11.4, 11.4], [8.4, 9, -11.4, 11.4]]) plane(M.terracotta, x0, x1, z0, z1, 0.004);
-  // the castle courtyard: colour-cobbles, a terracotta and blue ring round the fountain
-  plane(M.hubCobble, -20, 20, -35.9, -25, 0.002);
+  // the castle square: colour-cobbles from the end of Main Street (z -14) to the castle, a terracotta and blue ring round the fountain
+  plane(M.hubCobble, -20, 20, -35.9, -25, 0.002); plane(M.hubCobble, -14.5, 14.5, -25, -14, 0.002);
   ring(M.terracotta, 2.5, 3.6, 0, -30.4, 0.004); ring(M.inlayBlue, 3.6, 3.85, 0, -30.4, 0.004);
-  // Main Street: warm brick paving from the hub to the gate, with terracotta edging
-  plane(M.streetBrick, -7, 7, 12, 35.9, 0.002);
-  for (const sx of [-1, 1]) plane(M.terracotta, sx < 0 ? -7.6 : 7, sx < 0 ? -7 : 7.6, 12, 35.9, 0.004);
   const curb = (x0, x1, z0, z1, h = 0.12, mat = M.marbleTrim) => { for (const [a0, a1, b0, b1] of [[x0, x1, z0, z0 + 0.22], [x0, x1, z1 - 0.22, z1], [x0, x0 + 0.22, z0, z1], [x1 - 0.22, x1, z0, z1]]) { const g = new THREE.BoxGeometry(a1 - a0, h, b1 - b0); g.translate((a0 + a1) / 2, h / 2, (b0 + b1) / 2); B.add(mat, g); } };
-  curb(-9, 9, -12, 12, 0.06);
+  // Main Street: setts, gutters, kerbs, raised sidewalks and the storefront lots (park/mainstreet.js)
+  const streetStats = buildMainStreet(ctx);
   // gardens (west): gravel walks with sunken lawn beds gone to mud and leaf litter
   plane(M.gravel, -35.9, -9.5, -26.8, 35.9, 0.003);
-  for (const [x0, x1, z0, z1, mat] of [[-34, -23.5, 8.5, 20, M.mud], [-20.5, -11, 18.5, 33.5, M.leaves], [-34, -23.5, 23, 33.5, M.leaves], [-20.5, -11, 5, 15.5, M.mud], [-20.5, -11, -25, -11, M.leaves], [-34, -23.5, -25, -8.5, M.mud]]) {
+  for (const [x0, x1, z0, z1, mat] of [[-34, -23.5, 8.5, 20, M.mud], [-20.5, -11, 18.5, 33.5, M.leaves], [-34, -23.5, 23, 33.5, M.leaves], [-20.5, -11, 5, 15.5, M.mud], [-20.5, -15, -25, -11, M.leaves], [-34, -23.5, -25, -8.5, M.mud]]) {
     plane(mat, x0, x1, z0, z1, 0.006); curb(x0, x1, z0, z1, 0.16, M.stoneDark);
   }
   // midway (east): mossy setts in a ring round the carousel
-  { const g = new THREE.CircleGeometry(6.2, 48); g.rotateX(-Math.PI / 2); g.translate(15.7, 0.004, 9); B.add(M.mossCobble, g); }
+  { const g = new THREE.CircleGeometry(5.6, 48); g.rotateX(-Math.PI / 2); g.translate(19.5, 0.004, 9); B.add(M.mossCobble, g); }
 
   // ---------- the four edges ----------
   buildCastle(ctx);
@@ -82,29 +76,6 @@ export function buildArena(scene, quality, A) {
   const spawns = [];
   for (const [x, z] of [[0, -H], [0, H], [-H, 0], [H, 0]]) { const out = new THREE.Vector3(x, 0, z).normalize(); spawns.push(new THREE.Vector3(x + out.x * 6, 0, z + out.z * 6)); }
 
-  // ---------- central bandstand terrace (same deck, stairs and cover as before) ----------
-  const PH = 2.0;
-  B.col(-5, 5, 0, PH, -4.5, 4.5, { walk: true });
-  { const F = new Frame(B, 0, 0, 0);
-    F.box(M.stone, -4.95, 4.95, 0, PH - 0.3, -4.45, 4.45);
-    F.geo(M.marbleTrim, moldingRing(P.plinth(0.9), 9.9, 8.9, 0));
-    F.geo(M.marbleTrim, moldingRing(P.cornice(0.55), 9.7, 8.7, PH - 0.32));
-    F.box(M.marbleFloor, -5.02, 5.02, PH - 0.04, PH, -4.52, 4.52);
-    // panels on the terrace walls: sunk marble with bronze wreaths
-    for (const [x, z, ry] of [[-2.6, 4.46, 0], [2.6, 4.46, 0], [-2.6, -4.46, Math.PI], [2.6, -4.46, Math.PI], [5.0, 0, Math.PI / 2], [-5.0, 0, -Math.PI / 2]]) {
-      const w = new THREE.TorusGeometry(0.34, 0.06, 8, 24); w.rotateY(ry); w.translate(x, 0.95, z); B.add(M.brass, w);
-    }
-  }
-  const balSeg = (x0, x1, z0, z1) => { // balustraded cover segment on the deck: keeps the old low-wall collider exactly
-    B.col(x0, x1, PH, PH + 0.9, z0, z1);
-    const along = x1 - x0 > z1 - z0, len = along ? x1 - x0 : z1 - z0;
-    const b = balustrade(len - 0.5, { h: 0.9, pitch: 0.24 }); if (!along) b.rotateY(Math.PI / 2); b.translate((x0 + x1) / 2, PH, (z0 + z1) / 2); B.add(M.marbleTrim, b);
-    for (const e of [-1, 1]) { const px = along ? (e < 0 ? x0 + 0.2 : x1 - 0.2) : (x0 + x1) / 2, pz = along ? (z0 + z1) / 2 : (e < 0 ? z0 + 0.2 : z1 - 0.2);
-      const p = merge([new THREE.BoxGeometry(0.42, 0.95, 0.42).translate(0, 0.475, 0), new THREE.BoxGeometry(0.52, 0.08, 0.52).translate(0, 0.99, 0)]); p.translate(px, PH, pz); B.add(M.marbleTrim, p);
-      propAt('brass_vase_01', px, PH + 1.03, pz, rr() * 6, 0.62); }
-  };
-  balSeg(-4.6, -1.4, -4.475, -4.125); balSeg(1.4, 4.6, 4.125, 4.475);
-  balSeg(4.625, 4.975, -3.9, -1.3); balSeg(-4.975, -4.625, 1.3, 3.9);
   // stone stairs with marble nosings
   const stairs = (x, z, dirX, dirZ, width, height, steps, mat = M.stone) => {
     const run = 0.5, rise = height / steps;
@@ -116,39 +87,16 @@ export function buildArena(scene, quality, A) {
       const n = dirX ? new THREE.BoxGeometry(0.1, 0.05, width + 0.02) : new THREE.BoxGeometry(width + 0.02, 0.05, 0.1); n.translate(nx, h - 0.02, nz); B.add(M.marbleTrim, n);
     }
   };
-  stairs(0, -4.5, 0, -1, 3, PH, 8); stairs(0, 4.5, 0, 1, 3, PH, 8);
-  // the bandstand: eight fluted iron columns, a copper tent roof with a lace valance and gilt finial
-  { const cr = 4.25, ch = 8.0, oct = []; // tall slender columns: the roof stays out of the opening view of the castle
-    for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2 + Math.PI / 8; oct.push([Math.cos(a) * cr * 1.08, Math.sin(a) * cr * 0.98]); }
-    for (const [x, z] of oct) { const c = column(ch, 0.14, { flutes: 8, seg: 16, capital: 'corinthian' }); c.translate(x, PH, z); B.add(M.marbleTrim, c); B.col(x - 0.15, x + 0.15, PH, PH + ch, z - 0.15, z + 0.15, { surface: 'metal' }); }
-    const roofY = PH + ch;
-    const ring = new THREE.TorusGeometry(cr * 1.03, 0.09, 6, 8); ring.rotateX(Math.PI / 2); ring.rotateY(Math.PI / 8); ring.scale(1.04, 1, 0.95); ring.translate(0, roofY + 0.05, 0); B.add(M.gold, ring);
-    const tent = lathe([[cr * 1.22, 0], [cr * 1.15, 0.12], [cr * 0.95, 0.5], [cr * 0.6, 1.5], [cr * 0.3, 2.4], [0.25, 3.0], [0, 3.05]], 8); tent.rotateY(Math.PI / 8); tent.scale(1.04, 1, 0.95); tent.translate(0, roofY + 0.1, 0); B.add(stripeMat(), tent, 'keep');
-    const under = lathe([[0, 2.9], [cr * 1.15, 0.05]], 8); under.rotateY(Math.PI / 8); under.scale(1.04, 1, 0.95); under.translate(0, roofY + 0.05, 0); B.add(stripeMat(), under, 'keep');
-    const val = []; for (let k = 0; k < 8; k++) { const a0 = (k / 8) * Math.PI * 2 + Math.PI / 8, a1 = a0 + Math.PI / 4, p0 = [Math.cos(a0) * cr * 1.2 * 1.04, Math.sin(a0) * cr * 1.2 * 0.95], p1 = [Math.cos(a1) * cr * 1.2 * 1.04, Math.sin(a1) * cr * 1.2 * 0.95];
-      const len = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), r2 = ironRailing(len, 0.42, 0.09); r2.rotateZ(Math.PI); r2.rotateY(-Math.atan2(p1[1] - p0[1], p1[0] - p0[0])); r2.translate((p0[0] + p1[0]) / 2, roofY + 0.1, (p0[1] + p1[1]) / 2); val.push(r2); }
-    B.add(M.woodCream, merge(val));
-    const fin = lathe([[0.3, 0], [0.34, 0.15], [0.2, 0.3], [0.28, 0.55], [0.08, 0.9], [0.14, 1.1], [0.02, 1.9], [0, 2.0]], 14); fin.translate(0, roofY + 3.0, 0); B.add(M.gold, fin);
-    // a lantern hanging in the bandstand (the one real light on the deck)
-    propAt('Lantern_01', 0, roofY + 1.3, 0, 0.4, 0.55, { hang: true });
-    const L = new THREE.PointLight('#ffb36a', 9, 13, 1.7); L.position.set(0, roofY + 1.45, 0); scene.add(L); lights.push({ light: L, base: 9, flicker: 0.12 });
-  }
-
-  { const eave = (a) => new THREE.Vector3(Math.cos(a) * 4.25 * 1.27, PH + 8.0 + 0.05, Math.sin(a) * 4.25 * 1.17);
-    for (const [x, z, k] of [[-9, 6, 0], [10, -5, 1], [-9, -12.5, 2], [9, 12.6, 3], [-6, 12, 4], [6, -12, 5]]) {
-      const a = Math.atan2(z, x), p0 = eave(a), p1 = new THREE.Vector3(x, 4.3, z);
-      festive.bunting(k === 1 || k === 4 ? p1 : p0, k === 1 || k === 4 ? p0 : p1, { sag: 0.8, size: 0.46, seed: k * 2, broken: k === 1 || k === 4 });
-    } }
   // ---------- boarded game stalls (old container footprints: cover + the climbable stack) ----------
-  const stalls = [[-16, -8, 0, 0, 0, -1], [-16, -5.4, 0, 1, 0, 1], [-16, -8, 0, 2, 2.6, -1], [-12, 15, 0, 3, 0, 1], [20, -15, 1, 4, 0, 1], [8, -20, 0, 5, 0, -1], [-24, 22, 1, 6, 0, -1], [24, 24, 0, 7, 0, -1]];
+  const stalls = [[-22.5, -8, 0, 0, 0, -1], [-22.5, -5.4, 0, 1, 0, 1], [-22.5, -8, 0, 2, 2.6, -1], [-17.5, 9.5, 0, 3, 0, 1], [20, -15, 1, 4, 0, 1], [8, -20, 0, 5, 0, -1], [-24, 22, 1, 6, 0, -1], [24, 24, 0, 7, 0, -1]];
   for (const [x, z, rot, i, y0, cs] of stalls) stall(ctx, x, z, rot, i, y0, cs);
-  stairs(-12.95, -5.4, 1, 0, 2.2, 2.6, 10, M.boards);
-  buildCarousel(ctx, 15.7, 9);
+  stairs(-19.45, -5.4, 1, 0, 2.2, 2.6, 10, M.boards);
+  buildCarousel(ctx, 19.5, 9);
   // the park hub: a faded park guide by the way in, popcorn carts left where they stood, finger posts to the rides
-  parkMap(ctx, -9, 18, 0.35);
-  popcornCart(ctx, -6, 13.5, 0.4, 1); popcornCart(ctx, 12, -4, -1.2, 2); popcornCart(ctx, -8, -14, 2.0, 3, { tipped: true });
+  parkMap(ctx, -10.5, -17.2, 0.35);
+  popcornCart(ctx, -3.3, 14, 0.15, 1); popcornCart(ctx, 3.3, -8.5, -2.9, 2); popcornCart(ctx, -6, -16.5, 2.0, 3, { tipped: true });
   const toward = (x, z, tx, tz) => Math.atan2(-(tz - z), tx - x);
-  fingerPost(ctx, -2, 12, [['ASHLAND CASTLE', toward(-2, 12, 0, -36), '#2f63c4'], ['MIDWAY  ·  GAMES', toward(-2, 12, 30, 0), '#2f8a78'], ['THE GRAND WHEEL', toward(-2, 12, -64, -14), '#8a6a1c']]);
+  fingerPost(ctx, -5.3, 15.6, [['ASHLAND CASTLE', toward(-5.3, 15.6, 0, -36), '#2f63c4'], ['MIDWAY  ·  GAMES', toward(-5.3, 15.6, 30, 0), '#2f8a78'], ['THE GRAND WHEEL', toward(-5.3, 15.6, -64, -14), '#8a6a1c']]);
   fingerPost(ctx, -14, 0, [['SPLASH FLUME', toward(-14, 0, -29, 0), '#1f5b57'], ['IRON COMET', toward(-14, 0, 70, 0), '#5a1a14'], ['MAIN GATE', toward(-14, 0, 0, 40), '#3b2f5a']]);
 
 
@@ -169,7 +117,7 @@ export function buildArena(scene, quality, A) {
     for (let k = 0; k < 14; k++) blooms.push(F.point((rr() - 0.5) * 2.7, 0.92 + rr() * 0.22, (rr() - 0.5) * 0.4));
     for (const e of [-1, 1]) for (let k = 0; k < 4; k++) { const p = F.point((rr() - 0.5) * 3.1, 0, e * (0.36 + rr() * 0.12)); tufts.push([p.x, p.z, 0.25 + rr() * 0.3]); }
   };
-  [[-6, -12, 0], [6, 12, 0], [-9, 9, 1], [10, -8, 1], [-22, 2, 1], [23, -2, 1], [0, -26, 0], [0, 26, 0], [-27, -18, 0], [28, 16, 0], [13, 22, 1], [-10, -22, 1]]
+  [[-12, -19.8, 0], [12, -23.5, 0], [16.5, -10.5, 1], [-22, 2, 1], [23, -2, 1], [-27, -18, 0], [28, 16, 0], [17.5, 21, 1], [-10, -22.5, 1]]
     .forEach(([x, z, rot]) => planter(x, z, rot));
 
   // ---------- ride queue fencing (old crate cover spots): iron panels between brass-capped posts ----------
@@ -185,7 +133,7 @@ export function buildArena(scene, quality, A) {
     const a = F.point(-len / 2 - 0.08, 0, -0.12), b = F.point(len / 2 + 0.08, 0, 0.12);
     B.col(Math.min(a.x, b.x), Math.max(a.x, b.x), 0, 1.15, Math.min(a.z, b.z), Math.max(a.z, b.z), { surface: 'metal' });
   };
-  [[-4, -15.4, 0], [7, 17, 0], [16, -6, Math.PI / 2], [-19, 12, Math.PI / 2], [26, 6, 0], [-26, -6, Math.PI / 2], [4, -29, 0]]
+  [[-14.8, -15.6, 0], [22.5, 17.5, 0], [16, -6, Math.PI / 2], [-19, 13.6, Math.PI / 2], [26, 6, 0], [-28.5, -6, Math.PI / 2], [4, -29, 0]]
     .forEach(([x, z, r]) => queueRail(x, z, r));
 
   // ---------- cast-iron lamp standards (4 real lights + unlit / dying ones along the walks) ----------
@@ -206,8 +154,8 @@ export function buildArena(scene, quality, A) {
       }
     }
   };
-  lampPost(-9, 6, 0, 2, true); lampPost(10, -5, Math.PI, 2, true); lampPost(-20, -26, 0, 1, true); lampPost(21, 20, Math.PI, 1, true);
-  for (const [x, z, lit] of [[-9, -12.5, 1], [9, 12.6, 0], [-31, -7, 0], [-30, 15.5, 1], [-6.5, 30, 1], [6.5, 31, 0], [31, -10, 1], [30, 2.5, 0], [-9.2, 23, 0], [17, -27, 1], [-14.5, -27.5, 0]]) if (!inArea(x, z, 1)) lampPost(x, z, Math.abs(x) > Math.abs(z) ? Math.PI / 2 : 0, lit, false);
+  lampPost(-5.1, 5, 0, 2, true); lampPost(5.1, -5, Math.PI, 2, true); lampPost(-20, -26, 0, 1, true); lampPost(21, 20, Math.PI, 1, true);
+  for (const [x, z, lit] of [[-5.1, -11, 1], [5.1, 12.5, 0], [-31, -7, 0], [-30, 15.5, 1], [-5.1, 28.6, 1], [5.1, 28.6, 0], [31, -10, 1], [30, 2.5, 0], [-5.1, 24, 0], [17, -27, 1], [-14.5, -27.5, 0]]) if (!inArea(x, z, 1)) lampPost(x, z, Math.abs(x) > Math.abs(z) && Math.abs(x) > 6 ? Math.PI / 2 : 0, lit, false);
 
   // ---------- iron braziers (the old burning barrels: same spots, same fire) ----------
   const brazier = (x, z) => {
@@ -219,7 +167,7 @@ export function buildArena(scene, quality, A) {
     const L = new THREE.PointLight('#ff6a1c', 14, 12, 1.8); L.position.set(x, 1.4, z); scene.add(L); lights.push({ light: L, base: 14, flicker: 0.35 });
     fires.push(new THREE.Vector3(x, 0.92, z));
   };
-  brazier(-5, 10.5); brazier(14, -13); brazier(-18, -14); brazier(17, 14);
+  brazier(-17.5, 17.2); brazier(14, -13); brazier(-18, -14); brazier(17, 14);
 
   // ---------- great stone urns + bronze busts along the edges (old parked-car cover) ----------
   const urn = (x, z) => {
@@ -228,7 +176,7 @@ export function buildArena(scene, quality, A) {
     B.col(x - 0.65, x + 0.65, 0, 1.35, z - 0.65, z + 0.65);
     propAt(rr() < 0.5 ? 'nettle_plant#nettle_plant_tall_b_LOD0' : 'shrub_04', x, 2.05, z, rr() * 6, 0.9 + rr() * 0.6);
   };
-  for (const [x, z] of [[-20, 31.6], [12, 31.8], [-9, -31.7], [25, -31.6], [31.6, -25], [31.8, 11], [-31.6, 27], [-31.7, -12]]) if (!inArea(x, z)) urn(x, z);
+  for (const [x, z] of [[-20, 31.6], [-9, -31.7], [25, -31.6], [31.6, -25], [31.8, 11], [-31.6, 27], [-31.7, -12]]) if (!inArea(x, z)) urn(x, z);
 
   // ---------- litter: leaves, weeds through the paving, fallen boughs ----------
   // inside the locked areas: the Grotto's mossy rocks, ferns and a cut-glass chandelier gone dark; a saint
@@ -242,7 +190,7 @@ export function buildArena(scene, quality, A) {
     let x, z; const side = Math.floor(rr() * 4), t = (rr() * 2 - 1) * (H - 3);
     if (i < 50) [x, z] = side === 0 ? [t, -H + 0.5 + rr() * 1.5] : side === 1 ? [t, H - 0.5 - rr() * 1.5] : side === 2 ? [-H + 0.5 + rr() * 1.5, t] : [H - 0.5 - rr() * 1.5, t];
     else { x = (rr() * 2 - 1) * (H - 3); z = (rr() * 2 - 1) * (H - 3); }
-    if (inArea(x, z, 0.5) || (Math.abs(x) < 5.5 && Math.abs(z) < 7.5) || (Math.abs(x) < 4 && Math.abs(z) > 30)) continue;
+    if (inArea(x, z, 0.5) || (Math.abs(x) < 4 && Math.abs(z) > 30)) continue;
     if (colliders.some((c) => !c.ground && x > c.minX - 0.3 && x < c.maxX + 0.3 && z > c.minZ - 0.3 && z < c.maxZ + 0.3)) continue;
     propAt(weedIds[i % weedIds.length], x, 0, z, rr() * 6, 0.25 + rr() * 0.45);
   }
@@ -309,7 +257,7 @@ export function buildArena(scene, quality, A) {
   // ---------- skyline: the coaster's skeleton, dead woods, far park towers ----------
   const sky = buildSkyline(scene, M);
   const realLights = lights.filter((l) => !l.fake);
-  return { anim: (dt, t) => { for (const f of anim) f(dt, t); }, colliders, spawns, lights: realLights, glows: lights.filter((l) => l.fake), fires, nav: buildNav(colliders), stats: { decayTris: decayStats.tris, decayInstances: decayStats.instances, parkTris: Math.round(B.tris), propTris: Math.round(propTris), facadeTris: Math.round(B.tris), skyline: { buildings: sky.count, tris: sky.tris, drawCalls: sky.drawCalls }, festiveTris: Math.round(festive.tris || 0) } };
+  return { anim: (dt, t) => { for (const f of anim) f(dt, t); }, colliders, spawns, lights: realLights, glows: lights.filter((l) => l.fake), fires, nav: buildNav(colliders), stats: { streetTris: Math.round(streetStats.tris), decayTris: decayStats.tris, decayInstances: decayStats.instances, parkTris: Math.round(B.tris), propTris: Math.round(propTris), facadeTris: Math.round(B.tris), skyline: { buildings: sky.count, tris: sky.tris, drawCalls: sky.drawCalls }, festiveTris: Math.round(festive.tris || 0) } };
 }
 
 // ---------- navigation grid: floor height per cell + blocked cells ----------
@@ -330,16 +278,6 @@ function buildNav(colliders) {
     height[gz * N + gx] = floor; blocked[gz * N + gx] = block;
   }
   return { N, H, height, blocked };
-}
-
-// candy-stripe paint for the bandstand's tent roof (lathe UVs: u runs round the roof)
-function stripeMat() {
-  const c = document.createElement('canvas'); c.width = 1024; c.height = 64; const g = c.getContext('2d');
-  for (let i = 0; i < 16; i++) { g.fillStyle = i % 2 ? '#f6ecd8' : '#d23a33'; g.fillRect(i * 64, 0, 64, 64); }
-  g.fillStyle = 'rgba(0,0,0,0.12)'; for (let i = 0; i < 16; i++) g.fillRect(i * 64, 0, 2, 64);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
-  const m = new THREE.MeshStandardMaterial({ map: t, roughness: 0.42, metalness: 0.05, envMapIntensity: 1.0 });
-  m.userData.density = 1; return m;
 }
 
 // where the neglect shows: ivy up the castle, towers, gate, lodges and service courts; grass along every
@@ -363,15 +301,16 @@ function decayLayout(tufts, rr, inArea, colliders) {
   const put = (x, z, s) => { if (ok(x, z)) tufts.push([x, z, s]); };
   for (let i = 0; i < 150; i++) { const x = (rr() * 2 - 1) * 35; if (Math.abs(x) > 3.2) put(x, -35.3 + rr() * 0.35, 0.3 + rr() * 0.45); }
   for (let i = 0; i < 120; i++) { const x = (rr() * 2 - 1) * 35; if (Math.abs(x) > 3.2) put(x, 35.3 - rr() * 0.35, 0.3 + rr() * 0.4); }
-  for (let i = 0; i < 140; i++) { const sx = rr() < 0.5 ? -1 : 1, z = 12 + rr() * 23.5; put(sx * (6.95 + rr() * 0.7), z, 0.2 + rr() * 0.3); }
-  for (let i = 0; i < 90; i++) { const a = rr() * Math.PI * 2, r = rr() < 0.5 ? 7.95 : 6.65; put(Math.cos(a) * r, Math.sin(a) * r, 0.15 + rr() * 0.2); }
-  for (let i = 0; i < 70; i++) { const t = rr(); const e = Math.floor(rr() * 4); const [x, z] = e === 0 ? [-9 + t * 18, -12.05] : e === 1 ? [-9 + t * 18, 12.05] : e === 2 ? [-9.05, -12 + t * 24] : [9.05, -12 + t * 24]; put(x, z, 0.18 + rr() * 0.25); }
+  // Main Street: grass in the gutters along the kerbs and up against the shop plinths (on the raised walk)
+  const onWalk = (z) => STREET.blocks.some(([z0, z1]) => z > z0 + 0.3 && z < z1 - 0.3);
+  for (let i = 0; i < 150; i++) { const sx = rr() < 0.5 ? -1 : 1, z = STREET.north + rr() * (STREET.south - STREET.north - 0.5); put(sx * (STREET.road - 0.05 - rr() * 0.3), z, 0.18 + rr() * 0.28); }
+  for (let i = 0; i < 110; i++) { const sx = rr() < 0.5 ? -1 : 1, z = STREET.north + rr() * (STREET.apron - STREET.north); if (onWalk(z)) { const x = sx * (STREET.walk - 0.08 - rr() * 0.2); if (ok(x, z)) tufts.push([x, z, 0.2 + rr() * 0.3, STREET.walkY]); } }
   for (let i = 0; i < 40; i++) { const a = rr() * Math.PI * 2; put(Math.cos(a) * 2.68, -30.4 + Math.sin(a) * 2.68, 0.22 + rr() * 0.25); }
   for (let i = 0; i < 130; i++) { const x = (rr() * 2 - 1) * 34, z = (rr() * 2 - 1) * 34; put(x, z, 0.12 + rr() * 0.22); }
 
-  // litter (four hub strips so nothing hides under the deck)
-  const litterZones = [[-6.8, 6.8, 12.4, 35.4, 70], [-8.6, 8.6, -11.6, -5.6, 22], [-8.6, 8.6, 5.6, 11.6, 22], [-8.6, -5.4, -5.6, 5.6, 12], [5.4, 8.6, -5.6, 5.6, 12],
+  // litter: down Main Street (carriageway and both walks), the alleys, the square, the courtyard
+  const litterZones = [[-4.3, 4.3, -14, 35.4, 95], [-7.4, -4.8, -13.8, -2.7, 9, 0.15], [-7.4, -4.8, 2.7, 16.3, 11, 0.15], [-7.4, -4.8, 20.2, 33.3, 11, 0.15], [4.8, 7.4, -13.8, -2.7, 9, 0.15], [4.8, 7.4, 2.7, 16.3, 11, 0.15], [4.8, 7.4, 20.2, 33.3, 11, 0.15], [-13.4, 13.4, -2.4, 2.4, 14], [-13.4, 13.4, 16.6, 19.9, 10], [-14, 14, -24.5, -14.2, 20],
     [-19.5, 19.5, -35.3, -25.5, 55], [-34, 34, -34, 34, 70], [-8, 8, -54, -45, 18], [-8, 8, 45, 54, 18]];
-  const spills = [[-8.6, -15.2, 1.5, 180], [-6.4, 13.9, 0.7, 45], [12.3, -3.6, 0.6, 35], [2, 22, 0.4, 14], [-3, -27.5, 0.5, 18]];
+  const spills = [[-6.6, -15.6, 1.5, 180], [-2.6, 14.6, 0.7, 45], [2.7, -9.0, 0.6, 35], [2, 22, 0.4, 14], [-3, -27.5, 0.5, 18]];
   return { ivy, tufts, litterZones, spills };
 }

@@ -97,7 +97,7 @@ export const CRATE = {
   spots: [
     { x: -14, z: 3, ry: Math.PI / 2 },
     { x: 16, z: -26, ry: 0 },
-    { x: -8, z: 24, ry: Math.PI },
+    { x: -15.0, z: 23.4, ry: -Math.PI / 2 }, // behind the Main Street lots, off alley B
     { x: 26, z: -6, ry: -Math.PI / 2 },
     { x: 30, z: 33.5, ry: Math.PI, area: 'underpass' }, // only once THE GROTTO is open
   ],
@@ -137,7 +137,7 @@ export const DRINKS = {
   limit: 4, drinkTime: 1.7, humRange: 7,
   list: [
     { id: 'bulwark', name: 'BULWARK BREW', blurb: 'Max health 100 → 200', price: 2500, color: '#ff3b3b', x: -26, z: 10, ry: Math.PI / 2, hp: 100 },
-    { id: 'snapload', name: 'SNAPLOAD SODA', blurb: 'Reload 50% faster', price: 3000, color: '#5cff6a', x: 10, z: 25, ry: Math.PI, reload: 1.5 },
+    { id: 'snapload', name: 'SNAPLOAD SODA', blurb: 'Reload 50% faster', price: 3000, color: '#5cff6a', x: 14.6, z: 24.5, ry: Math.PI / 2, reload: 1.5 },
     { id: 'hairtrigger', name: 'HAIRTRIGGER POP', blurb: 'Fire rate +33%', price: 2000, color: '#ffb02e', x: 26, z: -24, ry: -Math.PI / 4, rof: 1.33 },
     { id: 'lastgasp', name: 'LAST GASP TONIC', blurb: 'Get back up once when you would die', price: 4000, color: '#b47bff', x: -33, z: -31.5, y: 3.2, ry: Math.PI / 2, area: 'roof', revive: { hp: 60, immune: 3, push: 7, dmg: 150 } },
   ],

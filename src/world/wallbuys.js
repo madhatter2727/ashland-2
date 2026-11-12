@@ -2,9 +2,9 @@ import * as THREE from 'three';
 
 // Chalk-outlined weapon boards bolted to container walls. Walk up, look at one, press F.
 const SPOTS = [
-  { id: 'smg', x: -12, y: 1.45, z: 13.77, ny: Math.PI },        // container south face
+  { id: 'smg', x: -17.5, y: 1.45, z: 8.27, ny: Math.PI },        // stall south face (moved off Main Street)
   { id: 'sg', x: 8, y: 1.45, z: -18.77, ny: 0 },                // container north face
-  { id: 'mr', x: 12.67, y: 1.45, z: 9, ny: -Math.PI / 2 },     // carousel west face
+  { id: 'mr', x: 16.47, y: 1.45, z: 9, ny: -Math.PI / 2 },     // carousel west face
   { id: 'lmg', x: 18.77, y: 1.45, z: -13.2, ny: -Math.PI / 2 }, // container west face
 ];
 
