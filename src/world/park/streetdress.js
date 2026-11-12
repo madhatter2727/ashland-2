@@ -15,7 +15,7 @@ export const CARTS = [[-3.45, 21.6, Math.PI / 2 + 0.06, false], [3.45, -6.2, -Ma
 
 // ---------- the bear: lumpy matted plush, slumped forward and to one side, one eye a loose thread ----------
 function teddy(scene, M, at, yaw, seed) {
-  const r = mulberry(seed), fur = new THREE.MeshStandardMaterial({ color: '#9a8262', roughness: 1 });
+  const r = mulberry(seed), fur = new THREE.MeshStandardMaterial({ color: '#7d6a52', roughness: 1 });
   weather(fur, { grime: 1, streaks: 0.4, wet: 0, height: 1.2, fade: 0.5 }); fur.userData.density = 1;
   // matted: bump the sphere vertices so the plush reads clumped and lumpy
   const blob = (rx, ry, rz) => { const g = new THREE.SphereGeometry(1, 14, 10); const p = g.attributes.position;
@@ -33,6 +33,7 @@ function teddy(scene, M, at, yaw, seed) {
   hm(blob(0.045, 0.035, 0.04), muzzle, 0, -0.025, 0.075); hm(blob(0.014, 0.01, 0.01), black, 0, -0.01, 0.112);
   hm(new THREE.SphereGeometry(0.014, 8, 6), black, -0.035, 0.025, 0.08);                                   // the one button eye
   hm(new THREE.CylinderGeometry(0.008, 0.008, 0.002, 8).rotateX(Math.PI / 2), black, 0.035, 0.025, 0.085);  // empty socket
+  hm(new THREE.IcosahedronGeometry(0.018, 0), new THREE.MeshStandardMaterial({ color: '#cbc2ad', roughness: 1 }), 0.04, 0.02, 0.085);   // stuffing out of the socket
   const thread = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(0.035, 0.025, 0.085), new THREE.Vector3(0.045, 0.0, 0.1), new THREE.Vector3(0.04, -0.04, 0.095)]), 6, 0.0025, 3);
   hm(thread, black, 0, 0, 0);
   bear.position.copy(at); bear.rotation.y = yaw; bear.scale.setScalar(1.35); bear.traverse((o) => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });

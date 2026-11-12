@@ -26,8 +26,8 @@ function benchParts() {
   for (const e of [-0.78, 0, 0.78]) {
     const leg = new THREE.CatmullRomCurve3([[0.2, 0], [0.22, 0.2], [0.18, 0.42], [0, 0.42], [-0.18, 0.42], [-0.22, 0.2], [-0.26, 0]].map(([z, y]) => new THREE.Vector3(e, y, z)));
     const back = new THREE.CatmullRomCurve3([[-0.18, 0.42], [-0.24, 0.6], [-0.29, 0.86], [-0.24, 0.96], [-0.2, 0.9]].map(([z, y]) => new THREE.Vector3(e, y, z)));
-    iron.push(new THREE.TubeGeometry(leg, 18, 0.025, 5), new THREE.TubeGeometry(back, 12, 0.025, 5));
-    if (e) { const arm = new THREE.CatmullRomCurve3([[-0.2, 0.62], [0.05, 0.66], [0.2, 0.62], [0.24, 0.52], [0.16, 0.48]].map(([z, y]) => new THREE.Vector3(e * 1.04, y, z))); iron.push(new THREE.TubeGeometry(arm, 12, 0.025, 5), new THREE.BoxGeometry(0.05, 0.2, 0.04).translate(e * 1.04, 0.52, 0.16)); }
+    iron.push(new THREE.TubeGeometry(leg, 12, 0.025, 4), new THREE.TubeGeometry(back, 8, 0.025, 4));
+    if (e) { const arm = new THREE.CatmullRomCurve3([[-0.2, 0.62], [0.05, 0.66], [0.2, 0.62], [0.24, 0.52], [0.16, 0.48]].map(([z, y]) => new THREE.Vector3(e * 1.04, y, z))); iron.push(new THREE.TubeGeometry(arm, 8, 0.025, 4), new THREE.BoxGeometry(0.05, 0.2, 0.04).translate(e * 1.04, 0.52, 0.16)); }
   }
   BENCH = { wood: merge(wood), iron: merge(iron) };
   return BENCH;
@@ -87,7 +87,7 @@ export function popcornCart2(ctx, x, z, ry, { tipped = false } = {}) {
   add(M.brass, brass);
   if (!tipped) { glass.push(new THREE.BoxGeometry(1.08, 0.66, 0.62).translate(0, 1.53, 0)); add(M.glass, glass, 'keep'); }
   // stale corn heaped in the case (spilled out round it when tipped: see the decay spills)
-  const corn = []; for (let k = 0; k < (tipped ? 25 : 80); k++) { const s = new THREE.IcosahedronGeometry(0.024 + ctx.rr() * 0.012, 0); s.translate((ctx.rr() - 0.5) * 1.0, 1.23 + ctx.rr() * 0.16 * ctx.rr(), (ctx.rr() - 0.5) * 0.56); corn.push(s); }
+  const corn = []; for (let k = 0; k < (tipped ? 15 : 40); k++) { const s = new THREE.IcosahedronGeometry(0.024 + ctx.rr() * 0.012, 0); s.translate((ctx.rr() - 0.5) * 1.0, 1.23 + ctx.rr() * 0.16 * ctx.rr(), (ctx.rr() - 0.5) * 0.56); corn.push(s); }
   add(M.popcorn, corn);
   // canopy: two pitched sheets back to back off a ridge along the cart, scalloped valances
   for (const s of [0, Math.PI]) { const g = awningGeo(L + 0.3, 0.6, 2.32, 2.0, 0.16, 0.03, 0, 8); g.rotateY(s); add(CART.canopy, [g], 'keep'); }

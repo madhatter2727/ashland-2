@@ -57,7 +57,7 @@ function fluted(g, y0, y1, k = 0.14) {   // ripple the lathe radius between y0 a
 function scroll(sx, h) {   // a C-scroll arm from the post out to a globe at sx metres, curling under itself
   const pts = []; for (let i = 0; i <= 14; i++) { const t = i / 14; pts.push(new THREE.Vector3(sx * (0.06 + t * 0.6), h + Math.sin(t * Math.PI) * 0.22 - t * 0.04, 0)); }
   const curl = []; for (let i = 0; i <= 10; i++) { const a = Math.PI * 0.5 + (i / 10) * Math.PI * 1.6, r = 0.12 * (1 - i / 16); curl.push(new THREE.Vector3(sx * (0.28 + Math.cos(a) * r), h - 0.16 + Math.sin(a) * r, 0)); }
-  return [new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 16, 0.022, 5), new THREE.TubeGeometry(new THREE.CatmullRomCurve3(curl), 12, 0.016, 5)];
+  return [new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 10, 0.022, 4), new THREE.TubeGeometry(new THREE.CatmullRomCurve3(curl), 8, 0.016, 4)];
 }
 let LAMP = null;
 function lampParts() {
@@ -73,7 +73,7 @@ function lampParts() {
   for (const sx of [-1, 1]) iron.push(lathe([[0.03, 3.78], [0.08, 3.8], [0.09, 3.86], [0, 3.86]], 10).translate(sx * 0.66, 0, 0), lathe([[0, 4.12], [0.15, 4.12], [0.1, 4.18], [0.03, 4.24], [0, 4.3]], 10).translate(sx * 0.66, 0, 0));
   // banner arm toward the street: bar + a little scroll brace
   iron.push(new THREE.CylinderGeometry(0.022, 0.022, 0.86, 5).rotateZ(Math.PI / 2).translate(0.45, 3.42, 0), new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(0.07, 2.95, 0), new THREE.Vector3(0.2, 3.2, 0), new THREE.Vector3(0.42, 3.4, 0)]), 8, 0.015, 4));
-  const globe = (x, y, r) => new THREE.SphereGeometry(r, 14, 10).scale(1, 1.15, 1).translate(x, y, 0);
+  const globe = (x, y, r) => new THREE.SphereGeometry(r, 10, 7).scale(1, 1.15, 1).translate(x, y, 0);
   LAMP = { iron: merge(iron), globes: [globe(0, 4.28, 0.2), globe(-0.66, 3.99, 0.15), globe(0.66, 3.99, 0.15)] };
   return LAMP;
 }

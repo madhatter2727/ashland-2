@@ -18,7 +18,7 @@ function grime(g, w, h, r, n = 260, a = 0.16) {
 export function awningTex(kind, torn) {
   return memo(`aw${kind}${torn}`, () => {
     const [c, g] = canvas(512, 512), r = mulberry(kind * 97 + (torn ? 13 : 1));
-    const col = kind === 0 ? ['#8a2a22', '#cdbb98'] : ['#4e2242', '#cdbd9c'];
+    const col = kind === 0 ? ['#962a1f', '#b4a07a'] : ['#552247', '#b3a27e'];
     const sw = 512 / 10, val = 400;
     for (let i = 0; i < 10; i++) { g.fillStyle = col[i % 2]; g.fillRect(i * sw, 0, sw, 512); }
     // canvas weave + sun-bleached top, water stains

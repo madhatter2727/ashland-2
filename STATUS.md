@@ -8,3 +8,4 @@
 2026-11-11 22:34 EST — M2a still running: 3 storefront styles on all 14 shops, peeling-paint blotches fixed, emporium matches ref 2 layout; now per-shop variation, then tests + commit. Next: M3 props/decay.
 2026-11-12 01:10 EST — M2 done & pushed (3f21330): 3 Victorian storefront styles on all 14 shops, gold signs, finished alley sides; doors test passed; park 754k tris. Next: M3 props/decay (running).
 2026-11-12 01:31 EST — M3 props/decay in progress (awnings, iron lamps + castle banners, benches, bins, popcorn carts, puddles, litter). Test deploy of M2 is live at https://ashland-2.vercel.app. Next: finish M3, then M4 polish.
+2026-11-12 01:56 EST — M3 done (stopped at time box, committed): awnings, iron lamps + castle banners, benches, bins, planters, popcorn carts, teddy bears, puddles, litter, leaves. Doors test exit 0; boss-out-of-Grotto stalled at doorway this run (known flaky, same on original). Next: M4 polish + deploy.
