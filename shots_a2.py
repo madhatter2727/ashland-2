@@ -19,7 +19,13 @@ with sync_playwright() as p:
     gt(0.6)
     print('spawn pose', ev("JSON.stringify({pos: game.player.pos.toArray(), yaw: game.player.yaw, pitch: game.player.pitch})"))
     pg.screenshot(path=f'{out}/{pre}-spawn.png'); print('shot spawn', flush=True)
-    views = [('square', (0, 0, -12), (0, 0.16)), ('side', (-17, 21, 24), (-0.62, -0.42))]
+    views = [('square', (0, 0, -12), (0, 0.16)), ('side', (-17, 21, 24), (-0.62, -0.42)),
+             ('emporium', (-1.6, 0, -8.2), (1.14, 0.2)),      # ~6 m from W7 Ashland Emporium (cf. docs/2-emporium-closeup.png)
+             ('shopc', (-1.6, 0, 19.2), (2.19, 0.18)),        # W2 Kettle Corn (style C) from across the walk
+             ('shopb', (-2.0, 0, 11.0), (2.1, 0.22)),         # W3 Clockwork Toys (style B)
+             ('alley', (-16, 0, 18.2), (-1.75, 0.1))]          # alley B from the gardens side, looking east
+    only = sys.argv[4].split(',') if len(sys.argv) > 4 else None
+    views = [v for v in views if not only or v[0] in only]
     for name, pos, look in views:
         if name == 'side':  # free camera (no player collision) above the west lots
             ev(f"__debug.cam({pos[0]}, {pos[1]}, {pos[2]}, {look[0]}, {look[1]})")

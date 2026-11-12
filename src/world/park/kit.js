@@ -55,6 +55,7 @@ export class Builder {
     if (!g) return;
     if (!g.attributes.normal) g.computeVertexNormals();
     if (uv === 'box') g = boxUV(g, mat.userData.density ?? 0.5);
+    if (uv === 'box' && mat.userData.swapUV) { const a = g.attributes.uv.array; for (let i = 0; i < a.length; i += 2) { const t = a[i]; a[i] = a[i + 1]; a[i + 1] = t; } }
     for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);
     if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
     if (!this.buckets.has(mat)) this.buckets.set(mat, []);

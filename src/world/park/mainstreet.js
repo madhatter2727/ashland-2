@@ -8,6 +8,7 @@
 import * as THREE from 'three';
 import { Frame, P, molding, mansard } from './kit.js';
 import { paintedSign } from './signs.js';
+import { buildStorefront } from './storefront.js';
 
 // cross-section (|x|, metres) and the blocks along z
 export const STREET = {
@@ -83,9 +84,27 @@ export function buildMainStreet(ctx) {
     B.col(s < 0 ? -S.walk : S.road, s < 0 ? -S.road : S.walk, 0, S.walkY, z0, z1, { walk: true });
   }
 
-  // ---------- storefront lots (M1 placeholders) ----------
-  for (const lot of LOTS) placeholderLot(ctx, lot);
+  // ---------- storefronts (M2, park/storefront.js): one collider per lot ----------
+  for (const lot of LOTS) {
+    if (!READY.has(lot.style)) { placeholderLot(ctx, lot); continue; }
+    const F = lotFrame(B, lot), w = lot.z1 - lot.z0;
+    const { top } = buildStorefront(ctx, F, lot, { depth: S.depth, exposed: exposure(lot) });
+    F.col(-w / 2, w / 2, 0, top, -S.depth, 0.14, { surface: 'concrete' });
+  }
   return { tris: countTris(B) - t0 };
+}
+
+const READY = new Set(['A', 'B', 'C']);
+// which ends of a lot show a bare side wall: local -x / +x (west lots: -x is the z1 end; east lots: -x is z0),
+// exposed from the ground at a block end, or above a lower neighbour
+function exposure(lot) {
+  const out = [];
+  for (const end of [-1, 1]) {
+    const atZ1 = (end < 0) === (lot.side < 0), z = atZ1 ? lot.z1 : lot.z0;
+    const nb = LOTS.find((o) => o.side === lot.side && (atZ1 ? o.z0 === z : o.z1 === z));
+    if (!nb) out.push({ end, from: 0 }); else if (nb.h < lot.h - 1.2) out.push({ end, from: nb.h });
+  }
+  return out;
 }
 
 // frame for a lot: origin at the facade centre on the facade line, local +z out into the street, x along the facade

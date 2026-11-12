@@ -26,7 +26,7 @@ const NOISE = /* glsl */ `
 export const DECAY = { grime: 0.9, streaks: 0.9, moss: 0.7, gild: 0.6, puddles: 0.6, fade: 1, peel: 0.75, rust: 1, cracks: 1 };
 
 export function weather(mat, o = {}) {
-  const W = { grime: 0.7, streaks: 0.5, wet: 0.5, moss: 0, gild: 0, puddles: 0, height: 2.4, fade: 0, peel: 0, rust: 0, cracks: 0, peelCol: [0.24, 0.21, 0.17], peelScale: 2.0, ...o };
+  const W = { grime: 0.7, streaks: 0.5, wet: 0.5, moss: 0, gild: 0, puddles: 0, height: 2.4, fade: 0, peel: 0, rust: 0, cracks: 0, mono: 0, peelCol: [0.24, 0.21, 0.17], peelScale: 2.0, ...o };
   for (const k of ['grime', 'streaks', 'moss', 'gild', 'puddles', 'fade', 'peel', 'rust', 'cracks']) W[k] *= DECAY[k];
   const pc = W.peelCol.map((v) => Number(v).toFixed(3)).join(', ');
   const f = (v) => Number(v).toFixed(3);
@@ -42,7 +42,9 @@ export function weather(mat, o = {}) {
         #endif
         vWP = (modelMatrix * wp4).xyz; vWN = normalize(mat3(modelMatrix) * wn3);`);
     sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP; varying vec3 vWN; uniform float uRainT; uniform float uWet;' + NOISE)
-      .replace('#include <map_fragment>', `#include <map_fragment>
+      .replace('#include <map_fragment>', `${W.mono ? 'vec3 wTint = diffuseColor.rgb;' : ''}
+        #include <map_fragment>
+        ${W.mono ? `{ vec3 tx = diffuseColor.rgb / max(wTint, vec3(1e-4)); float l = dot(tx, vec3(0.2126, 0.7152, 0.0722)); l = ${f(W.avgL ?? 0.2)} + (l - ${f(W.avgL ?? 0.2)}) * ${f(W.con ?? 1)}; diffuseColor.rgb = wTint * mix(tx, vec3(l), ${f(W.mono)}); }` : ''}
         float wUp = clamp(vWN.y, 0.0, 1.0);
         float wN = wfbm(vWP * 0.35);
         float gildLoss = 0.0;
@@ -113,6 +115,20 @@ export function weather(mat, o = {}) {
 }
 
 const tint = (m, c) => { m.color.set(c); return m; };
+// set the colour so (texture average x colour) = c, in linear space (k scales the result)
+const _avg = new Map();
+function texAvg(t) {
+  const img = t.image; if (_avg.has(img)) return _avg.get(img);
+  let out = [0.5, 0.5, 0.5];
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d'); g.drawImage(img, 0, 0, 32, 32);
+    const d = g.getImageData(0, 0, 32, 32).data, lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    const s = [0, 0, 0]; for (let i = 0; i < d.length; i += 4) for (let k = 0; k < 3; k++) s[k] += lin(d[i + k]);
+    out = s.map((v) => Math.max(0.02, v / (d.length / 4)));
+  } catch (e) { /* no canvas (tests): keep grey */ }
+  _avg.set(img, out); return out;
+}
+export function trueTint(m, c, k = 1) { let a = texAvg(m.map); if (m.userData.weather?.mono) { const l = 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2]; a = [l, l, l]; m.userData.weather.avgL = l; } const t = new THREE.Color(c); m.color.setRGB(t.r / a[0] * k, t.g / a[1] * k, t.b / a[2] * k); return m; }
 export function makeMaterials(A) {
   const P = (id, opt, density, w) => { const m = pbr(A, id, opt); m.userData.density = density; return w === false ? m : weather(m, w || {}); };
   const M = {
@@ -181,14 +197,23 @@ export function makeMaterials(A) {
     kerb: tint(P('white_sandstone_blocks_02', { normalScale: 1.2 }, 1 / 1.1, { grime: 0.9, streaks: 0.4, wet: 0.7, moss: 0.5, height: 0.6, cracks: 1 }), '#a49c8f'),
     walkBrick: tint(P('brick_pave_tint', { normalScale: 1.15 }, 1 / 1.3, { grime: 0.6, streaks: 0, wet: 0.7, puddles: 0.7, moss: 0.45, height: 0.1, cracks: 1 }), '#a65f4c'),
     walkFlag: tint(P('herringbone_pavement_03', { normalScale: 1.1 }, 1 / 1.6, { grime: 0.6, streaks: 0, wet: 0.7, puddles: 0.6, moss: 0.4, height: 0.1, cracks: 1 }), '#bcae98'),
-    paintTeal: tint(P('peeling_painted_wall', { normalScale: 0.9 }, 1 / 2.6, { grime: 0.8, streaks: 1, wet: 0.4, moss: 0.2, height: 3.5, fade: 0.6, peel: 0.6 }), '#6f9690'),
-    paintPlum: tint(P('peeling_painted_wall', { normalScale: 0.9 }, 1 / 2.6, { grime: 0.8, streaks: 1, wet: 0.4, moss: 0.2, height: 3.5, fade: 0.6, peel: 0.6 }), '#7c4e68'),
-    paintCoral: tint(P('peeling_painted_wall', { normalScale: 0.9 }, 1 / 2.6, { grime: 0.8, streaks: 1, wet: 0.4, moss: 0.2, height: 3.5, fade: 0.6, peel: 0.6 }), '#d08670'),
-    paintMustard: tint(P('peeling_painted_wall', { normalScale: 0.9 }, 1 / 2.6, { grime: 0.8, streaks: 1, wet: 0.4, moss: 0.2, height: 3.5, fade: 0.6, peel: 0.6 }), '#d1aa58'),
-    paintCream: tint(P('peeling_painted_wall', { normalScale: 0.9 }, 1 / 2.6, { grime: 0.8, streaks: 1, wet: 0.4, moss: 0.2, height: 3.5, fade: 0.6, peel: 0.6 }), '#eadcc0'),
-    paintBrick: tint(P('red_bricks_04', { normalScale: 1.1 }, 1 / 2.2, { grime: 0.9, streaks: 0.9, wet: 0.45, moss: 0.2, height: 3, fade: 0.3 }), '#b46a55'),
     bark: P('tree_bark_03', { color: '#7d756c', normalScale: 1.5 }, 1 / 1.6, { grime: 0.2, streaks: 0.5, wet: 0.5, moss: 0.4, height: 2 }),
   };
+  // Main Street storefronts (M2). `trueTint` divides out the texture's own average colour so a cream or teal
+  // tint reads as that colour on any base set (the plaster set is red, the plank set grey-green).
+  // Bodies: cracked painted plaster (fronts of A/C, all walls), horizontal clapboard (B fronts/sides);
+  // cream trim; darker joinery paints for shopfronts; shingle roofs. Peel patches are small (peelScale 6).
+  const plaster = (c) => trueTint(P('peeling_painted_wall', { normalScale: 0.85 }, 1 / 0.9, { grime: 0.8, streaks: 1, wet: 0.35, moss: 0.15, height: 3.2, fade: 0.25, peel: 0.32, peelScale: 4.2, peelCol: [1, 0, 0], mono: 1, con: 0.35 }), c, 0.85);
+  const clap = (c) => { const m = trueTint(P('distressed_painted_planks', { normalScale: 1.25 }, 1 / 1.9, { grime: 0.75, streaks: 1, wet: 0.4, moss: 0.15, height: 3, fade: 0.25, peel: 0.32, peelScale: 4.2, peelCol: [0.22, 0.2, 0.17], mono: 1, con: 0.6 }), c, 0.9); m.userData.swapUV = true; return m; };
+  const join = (c) => trueTint(P('distressed_painted_planks', { normalScale: 1.0 }, 1 / 1.2, { grime: 0.6, streaks: 0.9, wet: 0.35, height: 2, fade: 0.3, peel: 0.35, peelScale: 6, peelCol: [0.2, 0.18, 0.15], mono: 1, con: 0.5 }), c, 0.95);
+  Object.assign(M, {
+    paintTeal: plaster('#7d9a92'), paintPlum: plaster('#7d5a6b'), paintCoral: plaster('#c68a74'), paintMustard: plaster('#c7a35f'), paintCream: plaster('#d9ccb0'),
+    paintBrick: P('red_bricks_04', { color: '#b06a56', normalScale: 1.1 }, 1 / 2.2, { grime: 0.9, streaks: 0.9, wet: 0.45, moss: 0.2, height: 3, fade: 0.3 }),
+    clapTeal: clap('#7d9a92'), clapPlum: clap('#7d5a6b'), clapCoral: clap('#c68a74'), clapMustard: clap('#c7a35f'), clapCream: clap('#d9ccb0'), clapBrick: clap('#9a5a4a'),
+    trimCream: trueTint(P('white_stucco', { normalScale: 0.8 }, 1 / 1.1, { grime: 0.7, streaks: 1, wet: 0.35, moss: 0.1, height: 3, fade: 0.3, peel: 0.3, peelScale: 7, peelCol: [0.26, 0.23, 0.2] }), '#cfc1a2', 0.95),
+    joinPlum: join('#5b3a4b'), joinTeal: join('#3b5c58'), joinGreen: join('#3d5243'), joinRed: join('#6a3330'), joinNavy: join('#35405a'),
+    shingle: tint(P('roof_slates_02', { normalScale: 1.4 }, 1 / 1.3, { grime: 0.4, streaks: 0.5, wet: 0.8, moss: 0.3, height: -10 }), '#857b74'),
+  });
   M.popcorn = new THREE.MeshStandardMaterial({ color: '#d9bf7c', roughness: 0.95 }); M.popcorn.userData.density = 1;
   M.glass = new THREE.MeshPhysicalMaterial({ color: '#2a3640', roughness: 0.22, metalness: 0, transparent: true, opacity: 0.7, envMapIntensity: 1.1, depthWrite: false, specularIntensity: 1, ior: 1.52 });
   M.glass.userData.density = 1;
